@@ -5,7 +5,7 @@
     - name: Check that matrix-synapse is available when debian is specified as the install source
       block:
 
-        - name: Use apt show matrix-synapse to check if synapse is availabe 
+        - name: Use apt show matrix-synapse to check if synapse is availabe
           ansible.builtin.command: apt show matrix-synapse -a
           check_mode: false
           changed_when: false
@@ -16,7 +16,7 @@
           ansible.builtin.fail:
             msg: "Please ensure that Debian backports are enabled."
           when: synapse_debian_apt_show_synapse.rc == 100
-      
+
       when: synapse_source == "debian"
 
   tags:
