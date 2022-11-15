@@ -1,0 +1,19 @@
+---
+argument_specs:
+  main:
+    author: Chris Croome
+    description: Ansible role to install, configure and upgrade the matrix protocol server, synapse.
+    short_description: The main entry point for the synapse role.
+    options:
+      synapse:
+        type: bool
+        required: true
+        description: Run the tasks in this role
+      synapse_source:
+        type: string
+        required: true
+        description: Source for the synapse package.
+        choices:
+          - debian
+          - synapse
+...

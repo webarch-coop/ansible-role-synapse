@@ -1,0 +1,11 @@
+---
+- name: Install, configure and upgrade synapse
+  block:
+
+    - name: Include chacks
+      ansible.builtin.include_tasks: checks.yml
+
+  when: synapse | bool
+  tags:
+    - synapse
+...
