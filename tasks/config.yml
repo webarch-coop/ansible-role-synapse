@@ -1,0 +1,36 @@
+---
+- name: Configure synapse
+  block:
+
+    - name: Copy the homeserver.yaml file when it hasn't been modified using Ansible
+      ansible.builtin.copy:
+        src: /etc/matrix-synapse/homeserver.yaml
+        dest: "{{ synapse_homeserver_backup }}"
+        mode: 0600
+        remote_src: true
+      when:
+        - not synapse_homeserver_backup_check.stat.exists | bool
+        - synapse_homeserver_existing_config_lines[0] != "# Ansible managed"
+
+    - name: Include PostgreSQL role to get the password
+      ansible.builtin.include_role:
+        name: postgresql
+        tasks_from: pgpass_read.yml
+      vars:
+        postgresql_db: "{{ synapse_db_name | default('synapse') }}"
+        postgresql_user: "{{ synapse_db_user | default('synapse') }}"
+
+    - name: Synapse /etc/matrix-synapse/homeserver.yaml config present
+      ansible.builtin.template:
+        src: homeserver.yaml.j2
+        dest: /etc/matrix-synapse/homeserver.yaml
+        backup: true
+        mode: 0644
+        owner: root
+        group: root
+      when: synapse_homeserver_existing_config != synapse_homeserver
+
+  tags:
+    - synapse
+    - synapse_config
+...

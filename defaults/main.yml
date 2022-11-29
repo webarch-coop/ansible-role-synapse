@@ -1,4 +1,120 @@
 ---
 synapse: false
 synapse_source: debian
+synapse_homeserver_config:
+  tls_certificate_path: /etc/matrix-synapse/homeserver.tls.crt
+  tls_private_key_path: /etc/matrix-synapse/homeserver.tls.key
+  tls_dh_params_path: /etc/matrix-synapse/homeserver.tls.dh
+  no_tls: false
+  tls_fingerprints: []
+  pid_file: /var/run/matrix-synapse.pid
+  soft_file_limit: 0
+  federation_ip_range_blacklist:
+    - 127.0.0.0/8
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    - 100.64.0.0/10
+    - 169.254.0.0/16
+    - ::1/128
+    - fe80::/64
+    - fc00::/7
+  listeners:
+    - port: 8448
+      bind_addresses:
+        - ::1
+        - 127.0.0.1
+      type: http
+      tls: true
+      x_forwarded: false
+      resources:
+        - names:
+            - client
+            - federation
+          compress: false
+    - port: 8008
+      tls: false
+      bind_addresses:
+        - ::1
+        - 127.0.0.1
+      type: http
+      x_forwarded: false
+      resources:
+        - names:
+            - client
+            - federation
+          compress: false
+  database:
+    name: sqlite3
+    args:
+      database: /var/lib/matrix-synapse/homeserver.db
+  event_cache_size: 10K
+  log_config: /etc/matrix-synapse/log.yaml
+  media_store_path: /var/lib/matrix-synapse/media
+  uploads_path: /var/lib/matrix-synapse/uploads
+  max_upload_size: 100M
+  max_image_pixels: 32M
+  dynamic_thumbnails: false
+  thumbnail_sizes:
+    - width: 32
+      height: 32
+      method: crop
+    - width: 96
+      height: 96
+      method: crop
+    - width: 320
+      height: 240
+      method: scale
+    - width: 640
+      height: 480
+      method: scale
+    - width: 800
+      height: 600
+      method: scale
+  url_preview_enabled: false
+  max_spider_size: 10M
+  url_preview_accept_language:
+  recaptcha_public_key: YOUR_PUBLIC_KEY
+  recaptcha_private_key: YOUR_PRIVATE_KEY
+  enable_registration_captcha: false
+  recaptcha_siteverify_api: https://www.google.com/recaptcha/api/siteverify
+  turn_uris: []
+  turn_shared_secret: YOUR_SHARED_SECRET
+  turn_user_lifetime: 1h
+  turn_allow_guests: false
+  enable_registration: false
+  account_validity:
+  bcrypt_rounds: 12
+  allow_guest_access: false
+  trusted_third_party_id_servers:
+    - matrix.org
+    - vector.im
+    - riot.im
+  account_threepid_delegates:
+  enable_metrics: false
+  room_invite_state_types:
+    - m.room.join_rules
+    - m.room.canonical_alias
+    - m.room.avatar
+    - m.room.encryption
+    - m.room.name
+  app_service_config_files: []
+  expire_access_token: false
+  signing_key_path: /etc/matrix-synapse/homeserver.signing.key
+  old_signing_keys: {}
+  trusted_key_servers:
+    - server_name: matrix.org
+  saml2_config:
+    user_mapping_provider:
+      config:
+  oidc_config:
+    user_mapping_provider:
+      config:
+        localpart_template: '{{ user.preferred_username }}'
+  sso:
+  password_config:
+    enabled: true
+    policy:
+  spam_checker:
+  enable_group_creation: false
 ...

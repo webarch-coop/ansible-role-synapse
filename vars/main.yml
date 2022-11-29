@@ -1,0 +1,3 @@
+---
+synapse_homeserver_backup: /etc/matrix-synapse/.homeserver.original.bak.yaml
+...
