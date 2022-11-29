@@ -2,8 +2,26 @@
 - name: Install, configure and upgrade synapse
   block:
 
-    - name: Include chacks
+    - name: Include synapse checks
       ansible.builtin.include_tasks: checks.yml
+      tags:
+        - synapse_checks
+
+    - name: Include synapse apt tasks when installing from synapse apt repos
+      ansible.builtin.include_tasks: apt.yml
+      when: synapse_source == "synapse"
+      tags:
+        - synapse_apt
+
+    - name: Include synapse install tasks
+      ansible.builtin.include_tasks: install.yml
+      tags:
+        - synapse_install
+
+    - name: Include synapse configuration tasks
+      ansible.builtin.include_tasks: config.yml
+      tags:
+        - synapse_config
 
   when: synapse | bool
   tags:

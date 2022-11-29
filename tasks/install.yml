@@ -1,0 +1,34 @@
+---
+- name: Synapse install
+  block:
+
+    - name: Synapse present from backports on Debian Bullseye
+      block:
+
+        - name: Run apt-cache policy matrix-synapse
+          ansible.builtin.command: apt-cache policy matrix-synapse
+          check_mode: false
+          changed_when: false
+          register: synapse_apt_cache_policy_synapse
+
+        - name: Install synapse-matrix from backports
+          ansible.builtin.apt:
+            pkg:
+              - matrix-synapse
+            state: latest
+            default_release: "{{ ansible_distribution_release }}-backports"
+          when: ( "-backports" in synapse_apt_cache_policy_synapse.stdout )
+
+      when: ansible_distribution_release == "bullseye"
+
+    - name: Synapse present
+      ansible.builtin.apt:
+        pkg:
+          - matrix-synapse
+        state: present
+      when: ansible_distribution_release != "bullseye"
+
+  tags:
+    - synapse
+    - synapse_install
+...

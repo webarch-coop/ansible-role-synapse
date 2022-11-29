@@ -10,7 +10,7 @@ argument_specs:
         required: true
         description: Run the tasks in this role
       synapse_source:
-        type: string
+        type: str
         required: true
         description: Source for the synapse package.
         choices:

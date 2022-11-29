@@ -1,0 +1,12 @@
+---
+- name: Configure synapse apt repo
+  block:
+
+    - name: Debug
+      ansible.builtin.debug:
+        msg: "TODO, see https://matrix-org.github.io/synapse/latest/setup/installation.html#matrixorg-packages"
+
+  tags:
+    - synapse
+    - synapse_apt
+...

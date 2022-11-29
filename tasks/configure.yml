@@ -1,0 +1,36 @@
+---
+- name: Configure synapse
+  block:
+
+    - name: Slurp the homeserver.yaml file
+      ansible.builtin.slurp:
+        path: /etc/matrix-synapse/homeserver.yaml
+      register: synapse_homeserver_b64encoded
+
+    - name: Decode the base64 encoded version of homeserver.yaml and set a variable
+      ansible.builtin.set_fact:
+        synapse_homeserver_existing: "{{ synapse_homeserver_b64encoded['content'] | b64decode }}"
+        synapse_homeserver_existing_config: "{{ synapse_homeserver_b64encoded['content'] | b64decode | from_yaml }}"
+
+    - name: Debug synapse_homeserver_existing
+      ansible.builtin.debug:
+        var: synapse_homeserver_existing
+        verbosity: 2
+
+    - name: Debug synapse_homeserver_existing_yaml
+      ansible.builtin.debug:
+        var: synapse_homeserver_existing_yaml
+        verbosity: 2
+
+    - name: Include PostgreSQL role to get the password
+      ansible.builtin.include_role:
+        name: postgresql
+        tasks_from: pgpass_read.yml
+      vars:
+        postgresql_db: "{{ synapse_db_name | default('synapse') }}"
+        postgresql_user: "{{ synapse_db_user | default('synapse') }}"
+
+  tags:
+    - synapse
+    - synapse_config
+...

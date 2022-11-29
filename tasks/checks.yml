@@ -21,7 +21,7 @@
         - name: Fail if matrix-synapse is unavailable on Debian Bullseye
           ansible.builtin.assert:
             that:
-              - ( "buster-backports" in synapse_debian_apt_cache_policy_synapse,stdout ) 
+              - ( "buster-backports" in synapse_debian_apt_cache_policy_synapse,stdout )
             quiet: "{% if ansible_verbosity == 0 %}true{% else %}false{% endif %}"
           when: ansible_distribution_release == "bullseye"
 
@@ -29,4 +29,5 @@
 
   tags:
     - synapse
+    - synapse_checks
 ...
