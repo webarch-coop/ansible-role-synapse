@@ -1,6 +1,6 @@
 # Webarchitects Ansible Synapse Role
 
-This repo will contain an Ansible role to instal, configure and upgrade [synapse](https://matrix-org.github.io/synapse/latest/).
+This repo will contain an Ansible role to install, configure and upgrade [synapse](https://matrix-org.github.io/synapse/latest/).
 
 ## Defaults
 

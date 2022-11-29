@@ -2,20 +2,28 @@
 - name: Synapse checks
   block:
 
+    - name: Check Debian version
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Debian"
+          - ansible_distribution_release is ansible.builtin.regex('^bullseye|bookworm$')
+        quiet: "{% if ansible_verbosity == 0 %}true{% else %}false{% endif %}"
+
     - name: Check that matrix-synapse is available when debian is specified as the install source
       block:
 
-        - name: Use apt show matrix-synapse to check if synapse is availabe
-          ansible.builtin.command: apt show matrix-synapse -a
+        - name: Use apt-cache policy matrix-synapse to check if synapse is availabe
+          ansible.builtin.command: apt-cache policy matrix-synapse
           check_mode: false
           changed_when: false
-          register: synapse_debian_apt_show_synapse
-          failed_when: synapse_debian_apt_show_synapse.rc is not regex('^0|100$')
+          register: synapse_debian_apt_cache_policy_synapse
 
-        - name: Fail if matrix-synapse is unavailabel on Debian Bullseye
-          ansible.builtin.fail:
-            msg: "Please ensure that Debian backports are enabled."
-          when: synapse_debian_apt_show_synapse.rc == 100
+        - name: Fail if matrix-synapse is unavailable on Debian Bullseye
+          ansible.builtin.assert:
+            that:
+              - ( "buster-backports" in synapse_debian_apt_cache_policy_synapse,stdout ) 
+            quiet: "{% if ansible_verbosity == 0 %}true{% else %}false{% endif %}"
+          when: ansible_distribution_release == "bullseye"
 
       when: synapse_source == "debian"
 
