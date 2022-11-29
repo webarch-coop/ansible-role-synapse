@@ -1,3 +1,6 @@
 ---
+synapse_db_name: synapse
+synapse_db_pass:
+synapse_db_user: synapse
 synapse_homeserver_backup: /etc/matrix-synapse/.homeserver.original.bak.yaml
 ...

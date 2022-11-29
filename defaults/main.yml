@@ -1,7 +1,7 @@
 ---
 synapse: false
-synapse_source: debian
-synapse_homeserver_config:
+synapse_domain: "{{ inventory_hostname }}"
+synapse_homeserver:
   tls_certificate_path: /etc/matrix-synapse/homeserver.tls.crt
   tls_private_key_path: /etc/matrix-synapse/homeserver.tls.key
   tls_dh_params_path: /etc/matrix-synapse/homeserver.tls.dh
@@ -45,9 +45,14 @@ synapse_homeserver_config:
             - federation
           compress: false
   database:
-    name: sqlite3
+    name: psycopg2
     args:
-      database: /var/lib/matrix-synapse/homeserver.db
+      user: "{{ synapse_db_user }}"
+      password: "{{ synapse_db_pass }}"
+      database: synapse
+      host: localhost
+      cp_min: 5
+      cp_max: 10
   event_cache_size: 10K
   log_config: /etc/matrix-synapse/log.yaml
   media_store_path: /var/lib/matrix-synapse/media
@@ -110,11 +115,12 @@ synapse_homeserver_config:
   oidc_config:
     user_mapping_provider:
       config:
-        localpart_template: '{{ user.preferred_username }}'
+        # localpart_template: '{{ user.preferred_username }}'
   sso:
   password_config:
     enabled: true
     policy:
   spam_checker:
   enable_group_creation: false
+synapse_source: debian
 ...

@@ -17,8 +17,12 @@
         name: postgresql
         tasks_from: pgpass_read.yml
       vars:
-        postgresql_db: "{{ synapse_db_name | default('synapse') }}"
-        postgresql_user: "{{ synapse_db_user | default('synapse') }}"
+        postgresql_db: "{{ synapse_db_name }}"
+        postgresql_user: "{{ synapse_db_user }}"
+
+    - name: Set a fact for the PostgreSQL password
+      ansible.builtin.set_fact:
+        synapse_db_pass: "{{ postgresql_password }}"
 
     - name: Synapse /etc/matrix-synapse/homeserver.yaml config present
       ansible.builtin.template:

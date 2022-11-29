@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name matrix.{{ synapse_domain }};
+    location ~ ^(/_matrix|/_synapse/client) {
+        proxy_pass http://localhost:8008;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host;
+        client_max_body_size {{ synapse_homeserver.max_upload_size }};
+        proxy_http_version 1.1;
+    }
+}
+server {
+    listen 8448 ssl http2 default_server;
+    listen [::]:8448 ssl http2 default_server;
+    server_name {{ synapse_domain }};
+    location ~ ^(/_matrix) {
+        proxy_pass http://localhost:8008;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host;
+        client_max_body_size {{ synapse_homeserver.max_upload_size }};
+        proxy_http_version 1.1;
+    }
+}
+# vim: ft=nginx:

@@ -9,6 +9,22 @@ argument_specs:
         type: bool
         required: true
         description: Run the tasks in this role
+      synapse_db_user:
+        type: str
+        required: false
+        description: PostgreSQL username.
+      synapse_db_pass:
+        type: str
+        required: false
+        description: PostgreSQL password.
+      synapse_domain:
+        type: str
+        required: true
+        description: Domain name for the synapse server.
+      synapse_homeserver:
+        type: dict
+        required: true
+        description: YAML for the /etc/matrix-synapse/homeserver.yaml configuration file.
       synapse_source:
         type: str
         required: true
