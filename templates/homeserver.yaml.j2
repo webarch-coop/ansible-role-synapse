@@ -1,5 +1,4 @@
 # {{ ansible_managed }}
 
-{{ synapse_homeserver | ansible.builtin.to_nice_yaml }}
-
+{{ synapse_homeserver | ansible.builtin.to_nice_yaml(sort_keys=false, indent=2, width=2400) }}
 # vim: ft=yaml:

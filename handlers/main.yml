@@ -1,0 +1,7 @@
+---
+- name: Restart matrix-synapse
+  ansible.builtin.service:
+    name: matrix-synapse
+    state: restarted
+  listen: Restart matrix-synapse
+...

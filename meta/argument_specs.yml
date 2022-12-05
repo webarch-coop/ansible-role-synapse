@@ -11,8 +11,12 @@ argument_specs:
         description: Run the tasks in this role
       synapse_db_user:
         type: str
-        required: false
+        required: true
         description: PostgreSQL username.
+      synapse_db_name:
+        type: str
+        required: true
+        description: PostgreSQL password.
       synapse_db_pass:
         type: str
         required: false

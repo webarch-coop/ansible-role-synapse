@@ -9,16 +9,18 @@
         - synapse_config
         - synapse_install
 
-    - name: Include synapse apt tasks when installing from synapse apt repos
-      ansible.builtin.include_tasks: apt.yml
-      when: synapse_source == "synapse"
+    - name: Include synapse install tasks when installing from Debian apt repos
+      ansible.builtin.include_tasks: debian.yml
+      when: synapse_source == "debian"
       tags:
         - synapse_apt
 
-    - name: Include synapse install tasks
-      ansible.builtin.include_tasks: install.yml
-      tags:
-        - synapse_install
+    # TODO
+    # - name: Include synapse install tasks when installing from synapse apt repos
+    #   ansible.builtin.include_tasks: synapse.yml
+    #   when: synapse_source == "synapse"
+    #   tags:
+    #     - synapse_apt
 
     - name: Include synapse configuration tasks
       ansible.builtin.include_tasks: config.yml

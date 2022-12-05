@@ -1,0 +1,78 @@
+---
+- name: Synapse Debian install
+  block:
+
+    - name: matrix-synapse group present
+      ansible.builtin.group:
+        name: matrix-synapse
+        state: present
+
+    - name: Read the debconf for matrix-synapse
+      ansible.builtin.shell: |
+        set -e -o pipefail
+        debconf-show matrix-synapse | sed 's/^[*]/ /' | sed 's/synapse\///'
+      args:
+        executable: /usr/bin/bash
+      changed_when: false
+      check_mode: false
+      register: synapse_debconf_show
+
+    - name: Set a fact for the debconf for matrix-synapse
+      ansible.builtin.set_fact:
+        synapse_debconf: "{{ synapse_debconf_show.stdout | community.general.jc('kv') }}"
+
+    - name: Debug the debconf settings for matrix-synapse
+      ansible.builtin.debug:
+        var: synapse_debconf
+        verbosity: 2
+
+    - name: Debconf server-name
+      ansible.builtin.debconf:
+        name: matrix-synapse
+        question: matrix-synapse/server-name
+        value: "{{ synapse_domain }}"
+        vtype: text
+      when: >-
+        ( synapse_debconf['server-name'] is not defined ) or
+        ( synapse_debconf['server-name'] != synapse_domain )
+
+    - name: Synapse present from backports on Debian Bullseye
+      block:
+
+        - name: Run apt-cache policy matrix-synapse
+          ansible.builtin.command: apt-cache policy matrix-synapse
+          check_mode: false
+          changed_when: false
+          register: synapse_apt_cache_policy_synapse
+
+        - name: Install Synapse and dependencies from backports
+          ansible.builtin.apt:
+            pkg:
+              - libpq5
+              - matrix-synapse
+            state: latest
+            default_release: "{{ ansible_distribution_release }}-backports"
+          when: ( "-backports" in synapse_apt_cache_policy_synapse.stdout )
+          notify: Restart matrix-synapse
+
+      when: ansible_distribution_release == "bullseye"
+
+    - name: Synapse and dependencies present
+      ansible.builtin.apt:
+        pkg:
+          - libpq5
+          - matrix-synapse
+        state: present
+      when: ansible_distribution_release != "bullseye"
+      notify: Restart matrix-synapse
+
+    - name: matrix-synapse user in the ssl-cert group
+      ansible.builtin.user:
+        name: matrix-synapse
+        groups: ssl-cert
+        append: true
+
+  tags:
+    - synapse
+    - synapse_install
+...
