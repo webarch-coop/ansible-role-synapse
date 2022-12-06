@@ -2,6 +2,11 @@
 - name: Configure synapse
   block:
 
+    - name: matrix-synapse group present
+      ansible.builtin.group:
+        name: matrix-synapse
+        state: present
+
     - name: Copy the homeserver.yaml file when it hasn't been modified using Ansible
       ansible.builtin.copy:
         src: /etc/matrix-synapse/homeserver.yaml
@@ -11,6 +16,37 @@
       when:
         - not synapse_homeserver_backup_check.stat.exists | bool
         - synapse_homeserver_existing_config_lines[0] != "# Ansible managed"
+
+    - name: Symlink the cert and key if present and valid
+      block:
+
+        - name: Cert symlinked
+          ansible.builtin.file:
+            state: link
+            src: "{{ synapse_tls_certificate_path }}"
+            dest: /etc/matrix-synapse/homeserver.tls.crt
+            follow: false
+            mode: 0777
+            owner: matrix-synapse
+            group: ssl-cert
+          notify: Restart matrix-synapse
+
+        - name: Key symlinked
+          ansible.builtin.file:
+            state: link
+            src: "{{ synapse_tls_private_key_path }}"
+            dest: /etc/matrix-synapse/homeserver.tls.key
+            follow: false
+            mode: 0777
+            owner: matrix-synapse
+            group: ssl-cert
+          notify: Restart matrix-synapse
+
+      when:
+        - synapse_cert.stat.exists | bool
+        - synapse_key.stat.exists | bool
+        - synapse_cert_info.valid_at.tomorrow | bool
+        - synapse_cert_info.subject.commonName == synapse_domain 
 
     - name: Include PostgreSQL role to get the password
       ansible.builtin.include_role:
@@ -30,9 +66,9 @@
         src: database.yaml.j2
         dest: /etc/matrix-synapse/conf.d/database.yaml
         backup: true
-        mode: 0600
+        mode: 0640
         owner: matrix-synapse
-        group: nogroup
+        group: matrix-synapse
       when: >-
         ( synapse_database_existing_config is not defined ) or
         ( synapse_database_existing_config | length == 0 ) or
@@ -50,9 +86,9 @@
         src: homeserver.yaml.j2
         dest: /etc/matrix-synapse/homeserver.yaml
         backup: true
-        mode: 0600
+        mode: 0640
         owner: matrix-synapse
-        group: nogroup
+        group: matrix-synapse
       when: synapse_homeserver_existing_config != synapse_homeserver
       notify: Restart matrix-synapse
 
@@ -95,7 +131,7 @@
       community.crypto.openssl_dhparam:
         path: /etc/matrix-synapse/homeserver.tls.dh
         size: 4096
-        mode: 0600
+        mode: 0640
         owner: matrix-synapse
         group: matrix-synapse
       notify: Restart matrix-synapse

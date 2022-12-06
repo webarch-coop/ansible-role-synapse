@@ -90,4 +90,12 @@ argument_specs:
         choices:
           - debian
           - synapse
+      synapse_tls_certificate_path:
+        type: str
+        required: true
+        description: Path to be symlinked from /etc/matrix-synapse/homeserver.tls.crt.
+      synapse_tls_private_key_path:
+        type: str
+        required: true
+        description: Path to be symlinked from /etc/matrix-synapse/homeserver.tls.key.
 ...
