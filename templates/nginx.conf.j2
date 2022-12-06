@@ -3,8 +3,8 @@ server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
     server_name matrix.{{ synapse_domain }};
-    ssl_certificate "{{ synapse_ssl_certificate }}";
-    ssl_certificate_key "{{ synapse_ssl_certificate_key }}";
+    ssl_certificate "{{ synapse_homeserver.tls_certificate_path }}";
+    ssl_certificate_key "{{ synapse_homeserver.tls_private_key_path }}";
     location ~ ^(/_matrix|/_synapse/client) {
         proxy_pass http://localhost:8008;
         proxy_set_header X-Forwarded-For $remote_addr;
@@ -18,8 +18,8 @@ server {
     listen 8448 ssl http2 default_server;
     listen [::]:8448 ssl http2 default_server;
     server_name {{ synapse_domain }};
-    ssl_certificate "{{ synapse_ssl_certificate }}";
-    ssl_certificate_key "{{ synapse_ssl_certificate_key }}";
+    ssl_certificate "{{ synapse_homeserver.tls_certificate_path }}";
+    ssl_certificate_key "{{ synapse_homeserver.tls_private_key_path }}";
     location /.well-known/matrix/client {
         return 200 '{"m.homeserver": {"base_url": "https://{{ synapse_domain }}"}}';
         default_type application/json;

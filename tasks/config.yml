@@ -17,22 +17,42 @@
         name: postgresql
         tasks_from: pgpass_read.yml
       vars:
-        postgresql_db: "{{ synapse_db_name }}"
-        postgresql_user: "{{ synapse_db_user }}"
+        postgresql_db: "{{ synapse_db.database.args.database }}"
+        postgresql_user: "{{ synapse_db.database.args.user }}"
 
     - name: Set a fact for the PostgreSQL password
       ansible.builtin.set_fact:
         synapse_db_pass: "{{ postgresql_password }}"
       no_log: true
 
+    - name: Synapse database.yaml config present
+      ansible.builtin.template:
+        src: database.yaml.j2
+        dest: /etc/matrix-synapse/conf.d/database.yaml
+        backup: true
+        mode: 0600
+        owner: matrix-synapse
+        group: nogroup
+      when: >-
+        ( synapse_database_existing_config is not defined ) or
+        ( synapse_database_existing_config | length == 0 ) or
+        ( synapse_database_existing_config != synapse_db )
+      notify: Restart matrix-synapse
+
+    - name: Synapse secrets present
+      ansible.builtin.include_tasks: secrets.yml
+      loop: "{{ synapse_secrets }}"
+      loop_control:
+        loop_var: synapse_secret
+
     - name: Synapse homeserver.yaml config present
       ansible.builtin.template:
         src: homeserver.yaml.j2
         dest: /etc/matrix-synapse/homeserver.yaml
         backup: true
-        mode: 0640
+        mode: 0600
         owner: matrix-synapse
-        group: matrix-synapse
+        group: nogroup
       when: synapse_homeserver_existing_config != synapse_homeserver
       notify: Restart matrix-synapse
 
@@ -64,7 +84,7 @@
             group: root
           when: synapse_nginx_site_available.stat.exists | bool
 
-        - name: Nginx configtest
+        - name: Nginx configtest # noqa yaml[comments] command-instead-of-module
           ansible.builtin.command: service nginx configtest
           check_mode: false
           changed_when: false

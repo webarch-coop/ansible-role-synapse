@@ -1,12 +1,28 @@
 ---
 synapse: false
-synapse_db_name: synapse
-synapse_db_pass:
-synapse_db_user: synapse
+synapse_db: &synapse_db_defaults
+  database:
+    # The database engine name
+    name: psycopg2
+    # Arguments to pass to the engine
+    args:
+      user: synapse
+      password: "{{ synapse_db_pass }}"
+      database: synapse
+      host: localhost
+      cp_min: 5
+      cp_max: 10
+      # seconds of inactivity after which TCP should send a keepalive message to the server
+      keepalives_idle: 10
+      # the number of seconds after which a TCP keepalive message that is not
+      # acknowledged by the server should be retransmitted
+      keepalives_interval: 10
+      # the number of TCP keepalives that can be lost before the client's connection
+      # to the server is considered dead
+      keepalives_count: 3
 synapse_domain: "{{ inventory_hostname }}"
+synapse_report_stats: false
 synapse_source: debian
-synapse_ssl_certificate: "/etc/ssl/le/{{ synapse_domain }}.fullchain.pem"
-synapse_ssl_certificate_key: "/etc/ssl/le/{{ synapse_domain }}.key.pem"
 # https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values
 synapse_homeserver: &synapse_homeserver_defaults
   # PEM encoded X509 certificate for TLS.
@@ -89,7 +105,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   soft_file_limit: 0
   # Set to false to disable presence tracking on this homeserver.
   #
-  #use_presence: false
+  # use_presence: false
 
   # Whether to require authentication to retrieve profile data (avatars,
   # display names) of other users through the client API. Defaults to
@@ -97,25 +113,25 @@ synapse_homeserver: &synapse_homeserver_defaults
   # API, so this setting is of limited value if federation is enabled on
   # the server.
   #
-  #require_auth_for_profile_requests: true
+  # require_auth_for_profile_requests: true
 
   # Uncomment to require a user to share a room with another user in order
   # to retrieve their profile information. Only checked on Client-Server
   # requests. Profile requests from other servers should be checked by the
   # requesting server. Defaults to 'false'.
   #
-  #limit_profile_requests_to_users_who_share_rooms: true
+  # limit_profile_requests_to_users_who_share_rooms: true
 
   # If set to 'true', removes the need for authentication to access the server's
   # public rooms directory through the client API, meaning that anyone can
   # query the room directory. Defaults to 'false'.
   #
-  #allow_public_rooms_without_auth: true
+  # allow_public_rooms_without_auth: true
 
   # If set to 'true', allows any other homeserver to fetch the server's public
   # rooms directory via federation. Defaults to 'false'.
   #
-  #allow_public_rooms_over_federation: true
+  # allow_public_rooms_over_federation: true
 
   # The default room version for newly created rooms.
   #
@@ -125,7 +141,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # For example, for room version 1, default_room_version should be set
   # to "1".
   #
-  #default_room_version: "5"
+  # default_room_version: "5"
 
   # The GC threshold parameters to pass to `gc.set_threshold`, if defined
   # gc_thresholds: [700, 10, 10]
@@ -136,14 +152,14 @@ synapse_homeserver: &synapse_homeserver_defaults
 
   # Whether room invites to users on this server should be blocked
   # (except those sent by local server admins). The default is False.
-  # block_non_admin_invites: True
+  # block_non_admin_invites: true
 
   # Room searching
   #
   # If disabled, new messages will not be indexed for searching and users
   # will receive errors when searching for messages. Defaults to enabled.
   #
-  #enable_search: false
+  # enable_search: false
 
   # Restrict federation to the following whitelist of domains.
   # N.B. we recommend also firewalling your federation listener to limit
@@ -239,8 +255,8 @@ synapse_homeserver: &synapse_homeserver_defaults
   listeners:
     # Main HTTPS listener
     # For when matrix traffic is sent directly to synapse.
-    - # The port to listen for HTTPS requests on.
-      port: 8448
+    # The port to listen for HTTPS requests on.
+    - port: 8448
       # Local addresses to listen on.
       # On Linux and Mac OS, `::` will listen on all IPv4 and IPv6
       # addresses by default. For most other OSes, this will only listen
@@ -258,14 +274,16 @@ synapse_homeserver: &synapse_homeserver_defaults
       x_forwarded: false
       # List of HTTP resources to serve on this listener.
       resources:
-        - # List of resources to host on this listener.
-          names:
-            - client # The client-server APIs, both v1 and v2
+        # List of resources to host on this listener.
+        - names:
+            # The client-server APIs, both v1 and v2
+            - client
           # Should synapse compress HTTP responses to clients that support it?
           # This should be disabled if running synapse behind a load balancer
           # that can do automatic compression.
           compress: true
-        - names: [federation] # Federation APIs
+        # Federation APIs
+        - names: [federation]
           compress: false
           # optional list of additional endpoints which can be loaded via
           # dynamic modules
@@ -296,27 +314,6 @@ synapse_homeserver: &synapse_homeserver_defaults
           #     - '::1'
           #     - '127.0.0.1'
           #   type: manhole
-  # Database configuration
-  # https://matrix-org.github.io/synapse/latest/postgres.html#synapse-config
-  database:
-    # The database engine name
-    name: "psycopg2"
-    # Arguments to pass to the engine
-    args:
-      user: "{{ synapse_db_user }}"
-      password: "{{ synapse_db_pass }}"
-      database: "{{ synapse_db_name }}"
-      host: localhost
-      cp_min: 5
-      cp_max: 10
-      # seconds of inactivity after which TCP should send a keepalive message to the server
-      keepalives_idle: 10
-      # the number of seconds after which a TCP keepalive message that is not
-      # acknowledged by the server should be retransmitted
-      keepalives_interval: 10
-      # the number of TCP keepalives that can be lost before the client's connection
-      # to the server is considered dead
-      keepalives_count: 3
   # Number of events to cache in memory.
   event_cache_size: "10K"
   # A yaml python logging config file
@@ -347,28 +344,28 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # The defaults are as shown below.
   #
-  #rc_message:
-  #  per_second: 0.2
-  #  burst_count: 10
+  # rc_message:
+  #   per_second: 0.2
+  #   burst_count: 10
   #
-  #rc_registration:
-  #  per_second: 0.17
-  #  burst_count: 3
+  # rc_registration:
+  #   per_second: 0.17
+  #   burst_count: 3
   #
-  #rc_login:
-  #  address:
-  #    per_second: 0.17
-  #    burst_count: 3
-  #  account:
-  #    per_second: 0.17
-  #    burst_count: 3
-  #  failed_attempts:
-  #    per_second: 0.17
-  #    burst_count: 3
+  # rc_login:
+  #   address:
+  #     per_second: 0.17
+  #     burst_count: 3
+  #   account:
+  #     per_second: 0.17
+  #     burst_count: 3
+  #   failed_attempts:
+  #     per_second: 0.17
+  #     burst_count: 3
   #
-  #rc_admin_redaction:
-  #  per_second: 1
-  #  burst_count: 50
+  # rc_admin_redaction:
+  #   per_second: 1
+  #   burst_count: 50
 
   # Ratelimiting settings for incoming federation
   #
@@ -385,12 +382,12 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # The defaults are as shown below.
   #
-  #rc_federation:
-  #  window_size: 1000
-  #  sleep_limit: 10
-  #  sleep_delay: 500
-  #  reject_limit: 50
-  #  concurrent: 3
+  # rc_federation:
+  #   window_size: 1000
+  #   sleep_limit: 10
+  #   sleep_delay: 500
+  #   reject_limit: 50
+  #   concurrent: 3
 
   # Target outgoing federation transaction frequency for sending read-receipts,
   # per-room.
@@ -398,14 +395,14 @@ synapse_homeserver: &synapse_homeserver_defaults
   # If we end up trying to send out more read-receipts, they will get buffered up
   # into fewer transactions.
   #
-  #federation_rr_transactions_per_room_per_second: 50
+  # federation_rr_transactions_per_room_per_second: 50
 
   ## Media Store ##
 
   # Enable the media store service in the Synapse master. Uncomment the
   # following if you are using a separate media store worker.
   #
-  #enable_media_repo: false
+  # enable_media_repo: false
 
   # Directory where uploaded images and attachments are stored.
   media_store_path: "/var/lib/matrix-synapse/media"
@@ -454,7 +451,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # Is the preview URL API enabled?  If enabled, you *must* specify
   # an explicit url_preview_ip_range_blacklist of IPs that the spider is
   # denied from accessing.
-  url_preview_enabled: False
+  url_preview_enabled: false
   # List of IP address CIDR ranges that the URL preview spider is denied
   # from accessing.  There are no defaults: you must explicitly
   # specify a list for URL previewing to work.  You should specify any
@@ -560,7 +557,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # Enables ReCaptcha checks when registering, preventing signup
   # unless a captcha is answered. Requires a valid ReCaptcha
   # public/private key.
-  enable_registration_captcha: False
+  enable_registration_captcha: false
   # The API endpoint to use for verifying m.login.recaptcha responses.
   recaptcha_siteverify_api: "https://www.google.com/recaptcha/api/siteverify"
   ## TURN ##
@@ -571,8 +568,8 @@ synapse_homeserver: &synapse_homeserver_defaults
   turn_shared_secret: "YOUR_SHARED_SECRET"
   # The Username and password if the TURN server needs them and
   # does not use a token
-  #turn_username: "TURNSERVER_USERNAME"
-  #turn_password: "TURNSERVER_PASSWORD"
+  # turn_username: "TURNSERVER_USERNAME"
+  # turn_password: "TURNSERVER_PASSWORD"
 
   # How long generated TURN credentials last
   turn_user_lifetime: "1h"
@@ -581,7 +578,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # However, it does introduce a slight security risk as it allows users to
   # connect to arbitrary endpoints without having first signed up for a
   # valid account (e.g. by passing a CAPTCHA).
-  turn_allow_guests: False
+  turn_allow_guests: false
   ## Registration ##
 
   # Enable registration for new users.
@@ -604,14 +601,14 @@ synapse_homeserver: &synapse_homeserver_defaults
   # The account validity feature is disabled by default. Uncomment the
   # following line to enable it.
   #
-  #enabled: true
+  # enabled: true
 
   # The period after which an account is valid after its registration. When
   # renewing the account, its validity period will be extended by this amount
   # of time. This parameter is required when using the account validity
   # feature.
   #
-  #period: 6w
+  # period: 6w
 
   # The amount of time before an account's expiry date at which Synapse will
   # send an email to the account's email address with a renewal link. By
@@ -620,7 +617,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # If you enable this setting, you will also need to fill out the 'email' and
   # 'public_baseurl' configuration sections.
   #
-  #renew_at: 1w
+  # renew_at: 1w
 
   # The subject of the email sent out with the renewal link. '%(app)s' can be
   # used as a placeholder for the 'app_name' parameter from the 'email'
@@ -631,24 +628,24 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # If this is not set, a default value is used.
   #
-  #renew_email_subject: "Renew your %(app)s account"
+  # renew_email_subject: "Renew your %(app)s account"
 
   # Directory in which Synapse will try to find templates for the HTML files to
   # serve to the user when trying to renew an account. If not set, default
   # templates from within the Synapse package will be used.
   #
-  #template_dir: "res/templates"
+  # template_dir: "res/templates"
 
   # File within 'template_dir' giving the HTML to be displayed to the user after
   # they successfully renewed their account. If not set, default text is used.
   #
-  #account_renewed_html_path: "account_renewed.html"
+  # account_renewed_html_path: "account_renewed.html"
 
   # File within 'template_dir' giving the HTML to be displayed when the user
   # tries to renew an account with an invalid renewal token. If not set,
   # default text is used.
   #
-  #invalid_token_html_path: "invalid_token.html"
+  # invalid_token_html_path: "invalid_token.html"
 
   # Time that a user's session remains valid for, after they log in.
   #
@@ -659,7 +656,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # By default, this is infinite.
   #
-  #session_lifetime: 24h
+  # session_lifetime: 24h
 
   # The user must provide all of the below types of 3PID when registering.
   #
@@ -670,7 +667,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # Explicitly disable asking for MSISDNs from the registration
   # flow (overrides registrations_require_3pid if MSISDNs are set as required)
   #
-  #disable_msisdn_registration: true
+  # disable_msisdn_registration: true
 
   # Mandate that users are only allowed to associate certain formats of
   # 3PIDs with accounts on this server.
@@ -685,12 +682,7 @@ synapse_homeserver: &synapse_homeserver_defaults
 
   # Enable 3PIDs lookup requests to identity servers from this server.
   #
-  #enable_3pid_lookup: true
-
-  # If set, allows registration of standard or admin accounts by anyone who
-  # has the shared secret, even if registration is otherwise disabled.
-  #
-  # registration_shared_secret: <PRIVATE STRING>
+  # enable_3pid_lookup: true
 
   # Set the number of bcrypt rounds used to generate password hash.
   # Larger numbers increase the work factor needed to generate the hash.
@@ -701,14 +693,14 @@ synapse_homeserver: &synapse_homeserver_defaults
   # Allows users to register as guests without a password/email/etc, and
   # participate in rooms hosted on this server which have been made
   # accessible to anonymous users.
-  allow_guest_access: False
+  allow_guest_access: false
   # The identity server which we suggest that clients should use when users log
   # in on this server.
   #
   # (By default, no suggestion is made, so it is left up to the client.
   # This setting is ignored unless public_baseurl is also set.)
   #
-  #default_identity_server: https://matrix.org
+  # default_identity_server: https://matrix.org
 
   # The list of identity servers trusted to verify third party
   # identifiers by this server.
@@ -751,8 +743,8 @@ synapse_homeserver: &synapse_homeserver_defaults
   # If a delegate is specified, the config option public_baseurl must also be filled out.
   #
   account_threepid_delegates:
-  #email: https://example.com     # Delegate email sending to example.com
-  #msisdn: http://localhost:8090  # Delegate SMS sending to this local process
+  # email: https://example.com     # Delegate email sending to example.com
+  # msisdn: http://localhost:8090  # Delegate SMS sending to this local process
 
   # Whether users are allowed to change their displayname after it has
   # been initially set. Useful when provisioning users based on the
@@ -760,7 +752,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # Does not apply to server administrators. Defaults to 'true'
   #
-  #enable_set_displayname: false
+  # enable_set_displayname: false
 
   # Whether users are allowed to change their avatar after it has been
   # initially set. Useful when provisioning users based on the contents
@@ -768,24 +760,24 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # Does not apply to server administrators. Defaults to 'true'
   #
-  #enable_set_avatar_url: false
+  # enable_set_avatar_url: false
 
   # Whether users can change the 3PIDs associated with their accounts
   # (email address and msisdn).
   #
   # Defaults to 'true'
   #
-  #enable_3pid_changes: false
+  # enable_3pid_changes: false
 
   # Users who register on this homeserver will automatically be joined
   # to these rooms
-  #auto_join_rooms:
+  # auto_join_rooms:
   #    - "#example:example.com"
 
   ## Metrics ###
 
   # Enable collection and rendering of performance metrics
-  enable_metrics: False
+  enable_metrics: false
   ## API Configuration ##
 
   # A list of event types that will be included in the room_invite_state
@@ -797,10 +789,9 @@ synapse_homeserver: &synapse_homeserver_defaults
     - "m.room.name"
   # A list of application service config file to use
   app_service_config_files: []
-  # macaroon_secret_key: <PRIVATE STRING>
 
   # Used to enable access token expiration.
-  expire_access_token: False
+  expire_access_token: false
   ## Signing Keys ##
 
   # Path to the signing key to sign messages with
@@ -818,7 +809,8 @@ synapse_homeserver: &synapse_homeserver_defaults
   # Used to set the valid_until_ts in /key/v2 APIs.
   # Determines how quickly servers will query to check which keys
   # are still valid.
-  key_refresh_interval: "1d" # 1 Day.
+  # 1 Day.
+  key_refresh_interval: "1d"
   # The trusted servers to download signing keys from.
   #
   # When we need to fetch a signing key, each server is tried in parallel.
@@ -852,7 +844,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # An example configuration might look like:
   #
-  #trusted_key_servers:
+  # trusted_key_servers:
   #  - server_name: "my_trusted_server.example.com"
   #    verify_keys:
   #      "ed25519:auto": "abcdefghijklmnopqrstuvwxyzabcdefghijklmopqr"
@@ -863,14 +855,14 @@ synapse_homeserver: &synapse_homeserver_defaults
   # Uncomment the following to disable the warning that is emitted when the
   # trusted_key_servers include 'matrix.org'. See above.
   #
-  #suppress_key_server_warning: true
+  # suppress_key_server_warning: true
 
   # The signing keys to use when acting as a trusted key server. If not specified
   # defaults to the server signing key.
   #
   # Can contain multiple keys, one per line.
   #
-  #key_server_signing_keys_path: "key_server_signing_keys.key"
+  # key_server_signing_keys_path: "key_server_signing_keys.key"
 
   ## Single sign-on integration ##
 
@@ -898,21 +890,21 @@ synapse_homeserver: &synapse_homeserver_defaults
     # so it is not normally necessary to specify them unless you need to
     # override them.
     #
-    #sp_config:
-    #  # point this to the IdP's metadata. You can use either a local file or
-    #  # (preferably) a URL.
-    #  metadata:
-    #    #local: ["saml2/idp.xml"]
-    #    remote:
-    #      - url: https://our_idp/metadata.xml
+    # sp_config:
+    #   # point this to the IdP's metadata. You can use either a local file or
+    #   # (preferably) a URL.
+    #   metadata:
+    #     #local: ["saml2/idp.xml"]
+    #     remote:
+    #       - url: https://our_idp/metadata.xml
     #
     #    # By default, the user has to go to our login page first. If you'd like
     #    # to allow IdP-initiated login, set 'allow_unsolicited: true' in a
     #    # 'service.sp' section:
     #    #
-    #    #service:
-    #    #  sp:
-    #    #    allow_unsolicited: true
+    #    # service:
+    #    #   sp:
+    #    #     allow_unsolicited: true
     #
     #    # The examples below are just used to generate our metadata xml, and you
     #    # may well not need them, depending on your setup. Alternatively you
@@ -936,13 +928,13 @@ synapse_homeserver: &synapse_homeserver_defaults
     # Instead of putting the config inline as above, you can specify a
     # separate pysaml2 configuration file:
     #
-    #config_path: "CONFDIR/sp_conf.py"
+    # config_path: "CONFDIR/sp_conf.py"
 
     # the lifetime of a SAML session. This defines how long a user has to
     # complete the authentication process, if allow_unsolicited is unset.
     # The default is 5 minutes.
     #
-    #saml_session_lifetime: 5m
+    # saml_session_lifetime: 5m
 
     # An external module can be provided here as a custom solution to
     # mapping attributes returned from a saml provider onto a matrix user.
@@ -950,7 +942,7 @@ synapse_homeserver: &synapse_homeserver_defaults
     user_mapping_provider:
       # The custom module's class. Uncomment to use a custom module.
       #
-      #module: mapping_provider.SamlMappingProvider
+      # module: mapping_provider.SamlMappingProvider
 
       # Custom configuration values for the module. Below options are
       # intended for the built-in provider, they should be changed if
@@ -965,7 +957,7 @@ synapse_homeserver: &synapse_homeserver_defaults
       # saml2_config.mxid_source_attribute option. If that is still
       # defined, its value will be used instead.
       #
-      #mxid_source_attribute: displayName
+      # mxid_source_attribute: displayName
 
       # The mapping system to use for mapping the saml attribute onto a
       # matrix ID.
@@ -980,7 +972,7 @@ synapse_homeserver: &synapse_homeserver_defaults
       # saml2_config.mxid_mapping option. If that is still defined, its
       # value will be used instead.
       #
-      #mxid_mapping: dotreplace
+      # mxid_mapping: dotreplace
     # In previous versions of synapse, the mapping from SAML attribute to MXID was
     # always calculated dynamically rather than stored in a table. For backwards-
     # compatibility, we will look for user_ids matching such a pattern before
@@ -992,7 +984,7 @@ synapse_homeserver: &synapse_homeserver_defaults
     #
     # The default is 'uid'.
     #
-    #grandfathered_mxid_source_attribute: upn
+    # grandfathered_mxid_source_attribute: upn
 
     # Directory in which Synapse will try to find the template files below.
     # If not set, default templates from within the Synapse package will be used.
@@ -1017,7 +1009,7 @@ synapse_homeserver: &synapse_homeserver_defaults
     # You can see the default templates at:
     # https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
     #
-    #template_dir: "res/templates"
+    # template_dir: "res/templates"
   # OpenID Connect integration. The following settings can be used to make Synapse
   # use an OpenID Connect Provider for authentication, instead of its internal
   # password database.
@@ -1028,60 +1020,60 @@ synapse_homeserver: &synapse_homeserver_defaults
     # Uncomment the following to enable authorization against an OpenID Connect
     # server. Defaults to false.
     #
-    #enabled: true
+    # enabled: true
 
     # Uncomment the following to disable use of the OIDC discovery mechanism to
     # discover endpoints. Defaults to true.
     #
-    #discover: false
+    # discover: false
 
     # the OIDC issuer. Used to validate tokens and (if discovery is enabled) to
     # discover the provider's endpoints.
     #
     # Required if 'enabled' is true.
     #
-    #issuer: "https://accounts.example.com/"
+    # issuer: "https://accounts.example.com/"
 
     # oauth2 client id to use.
     #
     # Required if 'enabled' is true.
     #
-    #client_id: "provided-by-your-issuer"
+    # client_id: "provided-by-your-issuer"
 
     # oauth2 client secret to use.
     #
     # Required if 'enabled' is true.
     #
-    #client_secret: "provided-by-your-issuer"
+    # client_secret: "provided-by-your-issuer"
 
     # auth method to use when exchanging the token.
     # Valid values are 'client_secret_basic' (default), 'client_secret_post' and
     # 'none'.
     #
-    #client_auth_method: client_secret_post
+    # client_auth_method: client_secret_post
 
     # list of scopes to request. This should normally include the "openid" scope.
     # Defaults to ["openid"].
     #
-    #scopes: ["openid", "profile"]
+    # scopes: ["openid", "profile"]
 
     # the oauth2 authorization endpoint. Required if provider discovery is disabled.
     #
-    #authorization_endpoint: "https://accounts.example.com/oauth2/auth"
+    # authorization_endpoint: "https://accounts.example.com/oauth2/auth"
 
     # the oauth2 token endpoint. Required if provider discovery is disabled.
     #
-    #token_endpoint: "https://accounts.example.com/oauth2/token"
+    # token_endpoint: "https://accounts.example.com/oauth2/token"
 
     # the OIDC userinfo endpoint. Required if discovery is disabled and the
     # "openid" scope is not requested.
     #
-    #userinfo_endpoint: "https://accounts.example.com/userinfo"
+    # userinfo_endpoint: "https://accounts.example.com/userinfo"
 
     # URI where to fetch the JWKS. Required if discovery is disabled and the
     # "openid" scope is used.
     #
-    #jwks_uri: "https://accounts.example.com/.well-known/jwks.json"
+    # jwks_uri: "https://accounts.example.com/.well-known/jwks.json"
 
     # Uncomment to skip metadata verification. Defaults to false.
     #
@@ -1089,7 +1081,7 @@ synapse_homeserver: &synapse_homeserver_defaults
     # compliant.
     # Avoid this in production.
     #
-    #skip_verification: true
+    # skip_verification: true
 
     # An external module can be provided here as a custom solution to mapping
     # attributes returned from a OIDC provider onto a matrix user.
@@ -1101,7 +1093,7 @@ synapse_homeserver: &synapse_homeserver_defaults
       # See https://github.com/matrix-org/synapse/blob/master/docs/sso_mapping_providers.md#openid-mapping-providers
       # for information on implementing a custom mapping provider.
       #
-      #module: mapping_provider.OidcMappingProvider
+      # module: mapping_provider.OidcMappingProvider
 
       # Custom configuration values for the module. This section will be passed as
       # a Python dictionary to the user mapping provider module's `parse_config`
@@ -1114,7 +1106,7 @@ synapse_homeserver: &synapse_homeserver_defaults
         # name of the claim containing a unique identifier for the user.
         # Defaults to `sub`, which OpenID Connect compliant providers should provide.
         #
-        #subject_claim: "sub"
+        # subject_claim: "sub"
 
         # Jinja2 template for the localpart of the MXID.
         #
@@ -1124,16 +1116,16 @@ synapse_homeserver: &synapse_homeserver_defaults
         #
         # This must be configured if using the default mapping provider.
         #
-        # Jinja2 escaping https://stackoverflow.com/a/55464045/9669328 
+        # Jinja2 escaping https://stackoverflow.com/a/55464045/9669328
         localpart_template: "{% raw %}{{ user.preferred_username }}{% endraw %}"
         # Jinja2 template for the display name to set on first login.
         #
         # If unset, no displayname will be set.
         #
-        #display_name_template: "{{ user.given_name }} {{ user.last_name }}"
+        # display_name_template: "{% raw %}{{ user.given_name }} {{ user.last_name }}{% endraw %}"
   # Enable CAS for registration and login.
-  #cas_config:
-  #   enabled: true
+  # cas_config:
+  #    enabled: true
   #   server_url: "https://cas-server.com"
   #   service_url: "https://homeserver.domain.com:8448"
   #   #displayname_attribute: name
@@ -1160,9 +1152,9 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # By default, this list is empty.
   #
-  #client_whitelist:
-  #  - https://riot.im/develop
-  #  - https://my.custom.client/
+  # client_whitelist:
+  #   - https://riot.im/develop
+  #   - https://my.custom.client/
 
   # Directory in which Synapse will try to find the template files below.
   # If not set, default templates from within the Synapse package will be used.
@@ -1223,7 +1215,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # You can see the default templates at:
   # https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
   #
-  #template_dir: "res/templates"
+  # template_dir: "res/templates"
 
   # The JWT needs to contain a globally unique "sub" (subject) claim.
   #
@@ -1238,7 +1230,7 @@ synapse_homeserver: &synapse_homeserver_defaults
     # Uncomment and change to a secret random string for extra security.
     # DO NOT CHANGE THIS AFTER INITIAL SETUP!
     #
-    #pepper: "EVEN_MORE_SECRET"
+    # pepper: "EVEN_MORE_SECRET"
 
     # Define and enforce a password policy. Each parameter is optional.
     # This is an implementation of MSC2000.
@@ -1247,33 +1239,33 @@ synapse_homeserver: &synapse_homeserver_defaults
     # Whether to enforce the password policy.
     # Defaults to 'false'.
     #
-    #enabled: true
+    # enabled: true
 
     # Minimum accepted length for a password.
     # Defaults to 0.
     #
-    #minimum_length: 15
+    # minimum_length: 15
 
     # Whether a password must contain at least one digit.
     # Defaults to 'false'.
     #
-    #require_digit: true
+    # require_digit: true
 
     # Whether a password must contain at least one symbol.
     # A symbol is any character that's not a number or a letter.
     # Defaults to 'false'.
     #
-    #require_symbol: true
+    # require_symbol: true
 
     # Whether a password must contain at least one lowercase letter.
     # Defaults to 'false'.
     #
-    #require_lowercase: true
+    # require_lowercase: true
 
     # Whether a password must contain at least one lowercase letter.
     # Defaults to 'false'.
     #
-    #require_uppercase: true
+    # require_uppercase: true
   # Enable sending emails for notification events
   # Defining a custom URL for Riot is only needed if email notifications
   # should contain links to a self-hosted installation of Riot; when set
@@ -1288,13 +1280,13 @@ synapse_homeserver: &synapse_homeserver_defaults
     smtp_port: 25
   #   smtp_user: "exampleusername"
   #   smtp_pass: "examplepassword"
-    require_transport_security: False
+    require_transport_security: false
     notif_from: "Your Friendly %(app)s Home Server <noreply@{{ synapse_domain }}>"
   #   app_name: Matrix
   #   template_dir: res/templates
   #   notif_template_html: notif_mail.html
   #   notif_template_text: notif_mail.txt
-  #   notif_for_new_users: True
+  #   notif_for_new_users: true
   #   riot_base_url: "http://localhost/riot"
 
   # password_providers:
@@ -1324,7 +1316,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   # because it is loaded by the app. iPhone, however will send a
   # notification saying only that a message arrived and who it came from.
   #
-  #push:
+  # push:
   #   include_content: true
 
   # Spam checkers are third-party modules that can block specific actions
@@ -1332,12 +1324,12 @@ synapse_homeserver: &synapse_homeserver_defaults
   # usernames, as well as remote users by redacting incoming events.
   #
   spam_checker:
-  #- module: "my_custom_project.SuperSpamChecker"
-  #  config:
-  #    example_option: 'things'
-  #- module: "some_other_project.BadEventStopper"
-  #  config:
-  #    example_stop_events_from: ['@bad:example.com']
+  # - module: "my_custom_project.SuperSpamChecker"
+  #   config:
+  #     example_option: 'things'
+  # - module: "some_other_project.BadEventStopper"
+  #   config:
+  #     example_stop_events_from: ['@bad:example.com']
 
   # Whether to allow non server admins to create groups on this server
   enable_group_creation: false
@@ -1353,6 +1345,6 @@ synapse_homeserver: &synapse_homeserver_defaults
   # UPDATE user_directory_stream_pos SET stream_id = NULL;
   # on your database to tell it to rebuild the user_directory search indexes.
   #
-  #user_directory:
+  # user_directory:
   #   search_all_users: false
 ...

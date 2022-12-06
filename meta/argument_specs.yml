@@ -9,18 +9,68 @@ argument_specs:
         type: bool
         required: true
         description: Run the tasks in this role
-      synapse_db_user:
-        type: str
+      synapse_db:
+        type: dict
         required: true
-        description: PostgreSQL username.
-      synapse_db_name:
-        type: str
-        required: true
-        description: PostgreSQL password.
+        description: Synapse database configuration dictionary.
+        options:
+          database:
+            type: dict
+            required: true
+            description: Synapse database configuration.
+            options:
+              name:
+                type: str
+                required: true
+                description: The synapse database engine name.
+                choices:
+                  - sqlite3
+                  - psycopg2
+              args:
+                type: dict
+                required: true
+                description: Synapse database configuration options.
+                options:
+                  database:
+                    type: str
+                    required: true
+                    description: The database name for psycopg2 or file path for sqlite3.
+                  user:
+                    type: str
+                    required: false
+                    description: The database user name for psycopg2.
+                  password:
+                    type: str
+                    required: false
+                    description: The database password for psycopg2.
+                  host:
+                    type: str
+                    required: false
+                    description: The database host for psycopg2.
+                  cp_min:
+                    type: int
+                    required: false
+                    description: Twisted connection pool minimum.
+                  cp_max:
+                    type: int
+                    required: false
+                    description: Twisted connection pool maximum.
+                  keepalives_idle:
+                    type: int
+                    required: false
+                    description:
+                  keepalives_interval:
+                    type: int
+                    required: false
+                    description: The number of seconds after which a TCP keepalive message that is not acknowledged by the server should be retransmitted.
+                  keepalives_count:
+                    type: int
+                    required: false
+                    description: The number of TCP keepalives that can be lost before the client's connection to the server is considered dead.
       synapse_db_pass:
         type: str
         required: false
-        description: PostgreSQL password.
+        description: PostgreSQL database user password.
       synapse_domain:
         type: str
         required: true
@@ -29,6 +79,10 @@ argument_specs:
         type: dict
         required: true
         description: YAML for the /etc/matrix-synapse/homeserver.yaml configuration file.
+      synapse_report_stats:
+        type: bool
+        required: true
+        description: Whether or not to report homeserver usage statistics to matrix.org.
       synapse_source:
         type: str
         required: true

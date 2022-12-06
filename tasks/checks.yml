@@ -27,6 +27,32 @@
 
       when: synapse_source == "debian"
 
+    - name: Check if the conf.d/database.yaml file is present
+      ansible.builtin.stat:
+        path: /etc/matrix-synapse/conf.d/database.yml
+      register: synapse_etc_database_yaml
+
+    - name: Check the conf.d/database.yaml config when existing
+      block:
+
+        - name: Slurp the conf.d/database.yaml file
+          ansible.builtin.slurp:
+            path: /etc/matrix-synapse/conf.d/database.yaml
+          register: synapse_database_b64encoded
+          no_log: true
+
+        - name: Decode the base64 encoded version of homeserver.yaml and set a variable
+          ansible.builtin.set_fact:
+            synapse_database_existing_config: "{{ synapse_homeserver_b64encoded['content'] | b64decode | from_yaml }}"
+          no_log: true
+
+        - name: Debug /etc/matrix-synapse/conf.d/database.yaml content
+          ansible.builtin.debug:
+            var: synapse_database_existing_config
+            verbosity: 3
+
+      when: synapse_etc_database_yaml.stat.exists | bool
+
     - name: Check if the homeserver.yml file is present
       ansible.builtin.stat:
         path: /etc/matrix-synapse/homeserver.yaml
