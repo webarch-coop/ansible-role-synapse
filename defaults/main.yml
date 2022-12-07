@@ -783,12 +783,15 @@ synapse_homeserver: &synapse_homeserver_defaults
   ## API Configuration ##
 
   # A list of event types that will be included in the room_invite_state
+  # room_prejoin_state:
   room_invite_state_types:
     - "m.room.join_rules"
     - "m.room.canonical_alias"
     - "m.room.avatar"
     - "m.room.encryption"
     - "m.room.name"
+    - "m.room.create"
+    - "m.room.topic"
   # A list of application service config file to use
   app_service_config_files: []
 

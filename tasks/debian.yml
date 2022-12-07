@@ -71,10 +71,17 @@
       when: ansible_distribution_release != "bullseye"
       notify: Restart matrix-synapse
 
-    - name: User matrix-synapse is a member of the ssl-cert group
+    - name: matrix-synapse group present
+      ansible.builtin.group:
+        name: matrix-synapse
+        state: present
+
+    - name: User matrix-synapse is a member of the matrix-synapse and ssl-cert group
       ansible.builtin.user:
         name: matrix-synapse
-        groups: ssl-cert
+        group: matrix-synapse
+        groups:
+          - ssl-cert
         append: true
 
   tags:

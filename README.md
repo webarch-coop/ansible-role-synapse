@@ -35,3 +35,11 @@ The main configuration file, `/etc/matrix-synapse/homeserver.yaml` is backed up 
 |----------------------|------------------|--------------------------------------------------------------------------------|
 | `synapse`            | `false`          | Set to `true` to run the tasks in this role.                                   |
 | `synapse_source`     | `debian`         | Source for the synapse `.deb` package, `debian` requires backports on Bullseye |
+
+## Notes
+
+Gnerate a example config file:
+
+```bash
+usr/bin/python3 -m synapse.app.homeserver --config-path=/etc/matrix-synapse/test.yml --generate-config --report-stats=no -H $(hostname -f)
+```

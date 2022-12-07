@@ -2,11 +2,6 @@
 - name: Configure synapse
   block:
 
-    - name: matrix-synapse group present
-      ansible.builtin.group:
-        name: matrix-synapse
-        state: present
-
     - name: Copy the homeserver.yaml file when it hasn't been modified using Ansible
       ansible.builtin.copy:
         src: /etc/matrix-synapse/homeserver.yaml
