@@ -1,0 +1,20 @@
+---
+- name: Provision a RSA cert for synapse
+  block:
+
+    - name: Include the acme.sh / Let's Encrypt role
+      ansible.builtin.include_role:
+        name: acmesh
+        tasks_from: letsencrypt.yml
+      vars:
+        acmesh_cert_dir: /etc/matrix-synapse
+        acmesh_common_name: "{{ synapse_domain }}"
+        acmesh_ecc: false
+        acmesh_subject_alt_names:
+          - "synapse.{{ synapse_domain }}"
+        acmesh_reloadcmd: service matrix-synapse restart 
+
+  tags:
+    - synapse
+    - synapse_cert
+...
