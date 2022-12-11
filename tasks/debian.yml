@@ -71,7 +71,7 @@
       when: ansible_distribution_release != "bullseye"
       notify: Restart matrix-synapse
 
-    - name: matrix-synapse group present
+    - name: Group for matrix-synapse present
       ansible.builtin.group:
         name: matrix-synapse
         state: present

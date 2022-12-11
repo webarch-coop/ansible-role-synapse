@@ -12,7 +12,7 @@
         acmesh_ecc: false
         acmesh_subject_alt_names:
           - "synapse.{{ synapse_domain }}"
-        acmesh_reloadcmd: service matrix-synapse restart 
+        acmesh_reloadcmd: service matrix-synapse restart
 
   tags:
     - synapse

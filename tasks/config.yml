@@ -41,7 +41,7 @@
         - synapse_cert.stat.exists | bool
         - synapse_key.stat.exists | bool
         - synapse_cert_info.valid_at.tomorrow | bool
-        - synapse_cert_info.subject.commonName == synapse_domain 
+        - synapse_cert_info.subject.commonName == synapse_domain
 
     - name: Include PostgreSQL role to get the password
       ansible.builtin.include_role:

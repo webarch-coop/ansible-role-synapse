@@ -50,23 +50,23 @@
     - name: Check the cert when it is present
       block:
 
-            - name: Read TLS cert information
-              community.crypto.x509_certificate_info:
-                path: "{{ synapse_tls_certificate_path }}"
-                valid_at:
-                  tomorrow: "+1d"
-              register: synapse_cert_info
+        - name: Read TLS cert information
+          community.crypto.x509_certificate_info:
+            path: "{{ synapse_tls_certificate_path }}"
+            valid_at:
+              tomorrow: "+1d"
+          register: synapse_cert_info
 
-            - name: Debug cert info
-              ansible.builtin.debug:
-                var: synapse_cert_info
-                verbosity: 3
+        - name: Debug cert info
+          ansible.builtin.debug:
+            var: synapse_cert_info
+            verbosity: 3
 
-            - name: Check that the cert is not a ECC one and is valid tomorrow
-              ansible.builtin.assert:
-                that:
-                  - synapse_cert_info.public_key_type != "ECC"
-                  - synapse_cert_info.valid_at.tomorrow | bool
+        - name: Check that the cert is not a ECC one and is valid tomorrow
+          ansible.builtin.assert:
+            that:
+              - synapse_cert_info.public_key_type != "ECC"
+              - synapse_cert_info.valid_at.tomorrow | bool
 
       when: synapse_cert.stat.exists | bool
 
