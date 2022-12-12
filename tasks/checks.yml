@@ -29,7 +29,7 @@
 
     - name: Stat the TLS certificate path
       ansible.builtin.stat:
-        path: "{{ synapse_tls_certificate_path }}"
+        path: "{{ synapse_homeserver.tls_certificate_path }}"
       register: synapse_cert
 
     - name: Debug synapse_cert
@@ -39,7 +39,7 @@
 
     - name: Stat the TLS key path
       ansible.builtin.stat:
-        path: "{{ synapse_tls_private_key_path }}"
+        path: "{{ synapse_homeserver.tls_private_key_path }}"
       register: synapse_key
 
     - name: Debug synapse_key
@@ -52,7 +52,7 @@
 
         - name: Read TLS cert information
           community.crypto.x509_certificate_info:
-            path: "{{ synapse_tls_certificate_path }}"
+            path: "{{ synapse_homeserver.tls_certificate_path }}"
             valid_at:
               tomorrow: "+1d"
           register: synapse_cert_info

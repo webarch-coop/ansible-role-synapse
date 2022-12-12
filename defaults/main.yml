@@ -23,8 +23,6 @@ synapse_db: &synapse_db_defaults
 synapse_domain: "{{ inventory_hostname }}"
 synapse_report_stats: false
 synapse_source: debian
-synapse_tls_certificate_path: "/etc/ssl/le/{{ synapse_domain }}.fullchain.pem"
-synapse_tls_private_key_path: "/etc/ssl/le/{{ synapse_domain }}.key.pem"
 # https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values
 synapse_homeserver: &synapse_homeserver_defaults
   # PEM encoded X509 certificate for TLS.
