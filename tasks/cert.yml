@@ -7,11 +7,24 @@
         name: acmesh
         tasks_from: letsencrypt.yml
       vars:
-        acmesh_cert_dir: /etc/matrix-synapse
         acmesh_common_name: "{{ synapse_domain }}"
+        acmesh_cert_home: /etc/matrix-synapse
+        acmesh_cert_home_group: matrix-synapse
+        acmesh_cert_home_owner: matrix-synapse
+        acmesh_cert_home_mode: "0755"
+        acmesh_cert_file: /etc/matrix-synapse/homeserver.tls.nochain.crt
+        acmesh_cert_file_group: matrix-synapse
+        acmesh_cert_file_owner: matrix-synapse
+        acmesh_cert_file_mode: "0640"
+        acmesh_fullchain_file: /etc/matrix-synapse/homeserver.tls.crt
+        acmesh_fullchain_file_group: matrix-synapse
+        acmesh_fullchain_file_owner: matrix-synapse
+        acmesh_fullchain_file_mode: "0640"
+        acmesh_key_file: /etc/matrix-synapse/homeserver.tls.key
+        acmesh_key_file_group: matrix-synapse
+        acmesh_key_file_owner: matrix-synapse
+        acmesh_key_file_mode: "0640"
         acmesh_ecc: false
-        acmesh_subject_alt_names:
-          - "synapse.{{ synapse_domain }}"
         acmesh_reloadcmd: service matrix-synapse restart
 
   tags:
