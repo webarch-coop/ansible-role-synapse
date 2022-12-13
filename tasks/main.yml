@@ -23,11 +23,6 @@
     #   tags:
     #     - synapse_apt
 
-    - name: Include synapse cert tasks
-      ansible.builtin.include_tasks: cert.yml
-      tags:
-        - synapse_cert
-
     - name: Include synapse configuration tasks
       ansible.builtin.include_tasks: config.yml
       when: synapse_etc_homeserver_yaml.stat.exists | bool

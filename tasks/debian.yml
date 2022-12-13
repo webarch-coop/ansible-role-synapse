@@ -35,11 +35,11 @@
       ansible.builtin.debconf:
         name: matrix-synapse
         question: matrix-synapse/report-stats
-        value: "{{ synapse_report_stats }}"
+        value: "{{ synapse_homeserver.report_stats | default(false) }}"
         vtype: text
       when: >-
         ( synapse_debconf['report-stats'] is not defined ) or
-        ( synapse_debconf['report-stats'] != synapse_report_stats )
+        ( synapse_debconf['report-stats'] != synapse_homeserver.report_stats )
 
     - name: Synapse present from backports on Debian Bullseye
       block:

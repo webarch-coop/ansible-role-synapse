@@ -9,6 +9,10 @@ argument_specs:
         type: bool
         required: true
         description: Run the tasks in this role
+      synapse_client_domain:
+        type: str
+        required: true
+        description: Domain name for clients of the synapse server.
       synapse_db:
         type: dict
         required: true
@@ -71,18 +75,14 @@ argument_specs:
         type: str
         required: false
         description: PostgreSQL database user password.
-      synapse_domain:
+      synapse_federation_domain:
         type: str
         required: true
-        description: Domain name for the synapse server.
+        description: Domain name for federation with other synapse servers.
       synapse_homeserver:
         type: dict
         required: true
         description: YAML for the /etc/matrix-synapse/homeserver.yaml configuration file.
-      synapse_report_stats:
-        type: bool
-        required: true
-        description: Whether or not to report homeserver usage statistics to matrix.org.
       synapse_source:
         type: str
         required: true

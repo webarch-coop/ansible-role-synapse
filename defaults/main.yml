@@ -20,8 +20,8 @@ synapse_db: &synapse_db_defaults
       # the number of TCP keepalives that can be lost before the client's connection
       # to the server is considered dead
       keepalives_count: 3
-synapse_domain: "{{ inventory_hostname }}"
-synapse_report_stats: false
+synapse_client_domain: "matrix.{{ inventory_hostname }}"
+synapse_federation_domain: "{{ inventory_hostname }}"
 synapse_source: debian
 # https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values
 synapse_homeserver: &synapse_homeserver_defaults
@@ -66,6 +66,10 @@ synapse_homeserver: &synapse_homeserver_defaults
   # tls_fingerprints: [{"sha256": "<base64_encoded_sha256_fingerprint>"}]
 
   ## Server ##
+
+  # Whether or not to report homeserver usage statistics to matrix.org. See
+  # https://matrix-org.github.io/synapse/develop/usage/administration/monitoring/reporting_homeserver_usage_statistics.html
+  report_stats: false
 
   # When running as a daemon, the file to store the pid in
   pid_file: "/var/run/matrix-synapse.pid"
@@ -256,41 +260,41 @@ synapse_homeserver: &synapse_homeserver_defaults
     # Main HTTPS listener
     # For when matrix traffic is sent directly to synapse.
     # The port to listen for HTTPS requests on.
-    - port: 8448
-      # Local addresses to listen on.
-      # On Linux and Mac OS, `::` will listen on all IPv4 and IPv6
-      # addresses by default. For most other OSes, this will only listen
-      # on IPv6.
-      bind_addresses:
-        - '::1'
-        - '127.0.0.1'
-        # - '::'
-        # - '0.0.0.0'
-      # This is a 'http' listener, allows us to specify 'resources'.
-      type: http
-      tls: true
-      # Use the X-Forwarded-For (XFF) header as the client IP and not the
-      # actual client IP.
-      x_forwarded: false
-      # List of HTTP resources to serve on this listener.
-      resources:
-        # List of resources to host on this listener.
-        - names:
-            # The client-server APIs, both v1 and v2
-            - client
-          # Should synapse compress HTTP responses to clients that support it?
-          # This should be disabled if running synapse behind a load balancer
-          # that can do automatic compression.
-          compress: true
-        # Federation APIs
-        - names: [federation]
-          compress: false
-          # optional list of additional endpoints which can be loaded via
-          # dynamic modules
-          # additional_resources:
-          #   "/_matrix/my/custom/endpoint":
-          #     module: my_module.CustomRequestHandler
-          #     config: {}
+    # - port: 8448
+    #   # Local addresses to listen on.
+    #   # On Linux and Mac OS, `::` will listen on all IPv4 and IPv6
+    #   # addresses by default. For most other OSes, this will only listen
+    #   # on IPv6.
+    #   bind_addresses:
+    #     - '::1'
+    #     - '127.0.0.1'
+    #     # - '::'
+    #     # - '0.0.0.0'
+    #   # This is a 'http' listener, allows us to specify 'resources'.
+    #   type: http
+    #   tls: true
+    #   # Use the X-Forwarded-For (XFF) header as the client IP and not the
+    #   # actual client IP.
+    #   x_forwarded: false
+    #   # List of HTTP resources to serve on this listener.
+    #   resources:
+    #     # List of resources to host on this listener.
+    #     - names:
+    #         # The client-server APIs, both v1 and v2
+    #         - client
+    #       # Should synapse compress HTTP responses to clients that support it?
+    #       # This should be disabled if running synapse behind a load balancer
+    #       # that can do automatic compression.
+    #       compress: true
+    #     # Federation APIs
+    #     - names: [federation]
+    #       compress: false
+    #       # optional list of additional endpoints which can be loaded via
+    #       # dynamic modules
+    #       # additional_resources:
+    #       #   "/_matrix/my/custom/endpoint":
+    #       #     module: my_module.CustomRequestHandler
+    #       #     config: {}
     # Unsecure HTTP listener,
     # For when matrix traffic passes through loadbalancer that unwraps TLS.
     - port: 8008
@@ -301,7 +305,7 @@ synapse_homeserver: &synapse_homeserver_defaults
         # - '::'
         # - '0.0.0.0'
       type: http
-      x_forwarded: false
+      x_forwarded: true
       resources:
         - names: [client]
           compress: true

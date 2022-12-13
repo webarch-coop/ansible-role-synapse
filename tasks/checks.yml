@@ -65,7 +65,6 @@
         - name: Check that the cert is not a ECC one and is valid tomorrow
           ansible.builtin.assert:
             that:
-              - synapse_cert_info.public_key_type != "ECC"
               - synapse_cert_info.valid_at.tomorrow | bool
 
       when: synapse_cert.stat.exists | bool
