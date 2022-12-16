@@ -50,7 +50,7 @@
           changed_when: false
           register: synapse_apt_cache_policy_synapse
 
-        - name: Install Synapse and dependencies from backports # noqa yaml[comments] package-latest
+        - name: Install Synapse and dependencies from backports  # noqa yaml[comments] package-latest
           ansible.builtin.apt:
             pkg:
               - libpq5

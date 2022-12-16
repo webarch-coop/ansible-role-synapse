@@ -4,7 +4,7 @@
 
     - name: Set a fact for the homeserver YAML when synapse_homeserver_combine is not defined
       ansible.builtin.set_fact:
-        synapse_homeserver_proposed_config: "{{ synapse_homeserver }}"        
+        synapse_homeserver_proposed_config: "{{ synapse_homeserver }}"
       when: synapse_homeserver_combine is not defined
 
     - name: Set a fact for the homeserver YAML when synapse_homeserver_combine is defined

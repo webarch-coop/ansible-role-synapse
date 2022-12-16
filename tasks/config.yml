@@ -14,8 +14,8 @@
 
     - name: Copy the SSO example configuration
       ansible.builtin.copy:
-        src: sso_example.yml
-        dest: /etc/matrix-synapse/sso_example.yml
+        src: sso_example.txt
+        dest: /etc/matrix-synapse/sso_example.yaml
         mode: 0644
         owner: root
         group: root
@@ -100,7 +100,7 @@
             group: root
           when: synapse_nginx_site_available.stat.exists | bool
 
-        - name: Nginx configtest # noqa yaml[comments] command-instead-of-module
+        - name: Nginx configtest  # noqa yaml[comments] command-instead-of-module
           ansible.builtin.command: service nginx configtest
           check_mode: false
           changed_when: false

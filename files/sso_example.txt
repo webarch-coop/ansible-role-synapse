@@ -1,6 +1,6 @@
 # Ansible managed
 #
-# Please copy this file to /etc/matrix-synapse/conf.d/sso.yaml
+# Please copy or move this file to /etc/matrix-synapse/conf.d/sso.yaml
 # and then edit it as required.
 
 ## Single sign-on integration ##
