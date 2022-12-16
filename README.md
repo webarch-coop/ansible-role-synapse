@@ -4,6 +4,13 @@
 
 This repo contains an Ansible role to install, configure and upgrade [synapse](https://matrix-org.github.io/synapse/latest/), see also the [synapse-server](https://git.coop/webarch/synapse-server) repo for an example of how to use this role.
 
+## Dependencies
+
+This role includes the following Webarchitects roles:
+
+* [acmesh](https://git.coop/webarch/acmesh)
+* [postgresql](https://git.coop/webarch/postgresql)
+
 ## Synapse configuration
 
 This role uses `debconf` to set the `server_name` and `report_stats` variables, which results in values for these variables being written to files in `/etc/matrix-synapse/conf.d`.
