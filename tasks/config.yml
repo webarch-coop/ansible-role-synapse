@@ -12,30 +12,21 @@
         - not synapse_homeserver_backup_check.stat.exists | bool
         - synapse_homeserver_existing_config_lines[0] != "# Ansible managed"
 
+    - name: Copy the SSO example configuration
+      ansible.builtin.copy:
+        src: sso.yaml.example
+        dest: /etc/matrix-synapse/conf.d/sso.yaml.example
+        mode: 0644
+        owner: root
+        group: root
+
     - name: Include the acme.sh / Let's Encrypt role
       ansible.builtin.include_role:
         name: acmesh
         tasks_from: letsencrypt.yml
       vars:
-        acmesh_common_name: "{{ synapse_domain }}"
-        acmesh_subject_alt_names: []
-        acmesh_cert_home: /etc/matrix-synapse
-        acmesh_cert_home_group: matrix-synapse
-        acmesh_cert_home_owner: root
-        acmesh_cert_home_mode: "0750"
-        acmesh_cert_file: /etc/matrix-synapse/homeserver.tls.nochain.crt
-        acmesh_cert_file_group: matrix-synapse
-        acmesh_cert_file_owner: root
-        acmesh_cert_file_mode: "0640"
-        acmesh_fullchain_file: /etc/matrix-synapse/homeserver.tls.crt
-        acmesh_fullchain_file_group: matrix-synapse
-        acmesh_fullchain_file_owner: root
-        acmesh_fullchain_file_mode: "0640"
-        acmesh_key_file: /etc/matrix-synapse/homeserver.tls.key
-        acmesh_key_file_group: matrix-synapse
-        acmesh_key_file_owner: root
-        acmesh_key_file_mode: "0640"
-        acmesh_reloadcmd: service matrix-synapse restart
+        acmesh_common_name: "{{ synapse_server_name }}"
+        acmesh_reloadcmd: service nginx restart
 
     - name: Include PostgreSQL role to get the password
       ansible.builtin.include_role:
@@ -78,7 +69,7 @@
         mode: 0640
         owner: root
         group: matrix-synapse
-      when: synapse_homeserver_existing_config != synapse_homeserver
+      when: synapse_homeserver_existing_config != synapse_homeserver_proposed_config
       notify: Restart matrix-synapse
 
     - name: Nginx config
@@ -87,7 +78,7 @@
         - name: Synapse Nginx config present in sites-available
           ansible.builtin.template:
             src: nginx.conf.j2
-            dest: "/etc/nginx/sites-available/{{ synapse_domain }}.conf"
+            dest: "/etc/nginx/sites-available/{{ synapse_server_name }}.conf"
             backup: true
             mode: 0644
             owner: root
@@ -95,14 +86,14 @@
 
         - name: Stat synapse Nginx config in sites-available
           ansible.builtin.stat:
-            path: "/etc/nginx/sites-available/{{ synapse_domain }}.conf"
+            path: "/etc/nginx/sites-available/{{ synapse_server_name }}.conf"
           register: synapse_nginx_site_available
 
         - name: Synapse Nginx config config symlinked from sites-enabled
           ansible.builtin.file:
             state: link
-            src: "/etc/nginx/sites-available/{{ synapse_domain }}.conf"
-            dest: "/etc/nginx/sites-enabled/{{ synapse_domain }}.conf"
+            src: "/etc/nginx/sites-available/{{ synapse_server_name }}.conf"
+            dest: "/etc/nginx/sites-enabled/{{ synapse_server_name }}.conf"
             follow: false
             mode: 0777
             owner: root

@@ -5,10 +5,9 @@
     - name: Include synapse checks
       ansible.builtin.include_tasks: checks.yml
       tags:
-        - synapse_cert
+        - synapse_apt
         - synapse_checks
         - synapse_config
-        - synapse_install
 
     - name: Include synapse install tasks when installing from Debian apt repos
       ansible.builtin.include_tasks: debian.yml

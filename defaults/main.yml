@@ -1,6 +1,6 @@
 ---
 synapse: false
-synapse_db: &synapse_db_defaults
+synapse_db:
   database:
     # The database engine name
     name: psycopg2
@@ -20,19 +20,20 @@ synapse_db: &synapse_db_defaults
       # the number of TCP keepalives that can be lost before the client's connection
       # to the server is considered dead
       keepalives_count: 3
-synapse_client_domain: "matrix.{{ inventory_hostname }}"
-synapse_federation_domain: "{{ inventory_hostname }}"
+synapse_server_name: "{{ inventory_hostname }}"
 synapse_source: debian
 # https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values
-synapse_homeserver: &synapse_homeserver_defaults
+synapse_homeserver:
   # PEM encoded X509 certificate for TLS.
   # You can replace the self-signed certificate that synapse
   # autogenerates on launch with your own SSL certificate + key pair
   # if you like.  Any required intermediary certificates can be
   # appended after the primary certificate in hierarchical order.
-  tls_certificate_path: "/etc/matrix-synapse/homeserver.tls.crt"
+  # tls_certificate_path: "/etc/matrix-synapse/homeserver.tls.crt"
+  tls_certificate_path: "/etc/ssl/le/{{ synapse_server_name }}.fullchain.pem"
   # PEM encoded private key for TLS
-  tls_private_key_path: "/etc/matrix-synapse/homeserver.tls.key"
+  # tls_private_key_path: "/etc/matrix-synapse/homeserver.tls.key"
+  tls_private_key_path: "/etc/ssl/le/{{ synapse_server_name }}.key.pem"
   # PEM dh parameters for ephemeral keys
   tls_dh_params_path: "/etc/matrix-synapse/homeserver.tls.dh"
   # Don't bind to the https port
@@ -101,7 +102,7 @@ synapse_homeserver: &synapse_homeserver_defaults
 
   # The public-facing base URL for the client API (not including _matrix/...)
   # public_baseurl: https://example.com:8448/
-  public_baseurl: https://{{ synapse_domain }}/
+  public_baseurl: https://{{ synapse_server_name }}/
 
   # Set the soft limit on the number of file descriptors synapse can use
   # Zero is used to indicate synapse should set the soft limit to the
@@ -307,9 +308,9 @@ synapse_homeserver: &synapse_homeserver_defaults
       type: http
       x_forwarded: true
       resources:
-        - names: [client]
-          compress: true
-        - names: [federation]
+        - names:
+            - client
+            - federation
           compress: false
           # Turn on the twisted ssh manhole service on localhost on the given
           # port.
@@ -871,359 +872,6 @@ synapse_homeserver: &synapse_homeserver_defaults
   #
   # key_server_signing_keys_path: "key_server_signing_keys.key"
 
-  ## Single sign-on integration ##
-
-  # Enable SAML2 for registration and login. Uses pysaml2.
-  #
-  # At least one of `sp_config` or `config_path` must be set in this section to
-  # enable SAML login.
-  #
-  # (You will probably also want to set the following options to `false` to
-  # disable the regular login/registration flows:
-  #   * enable_registration
-  #   * password_config.enabled
-  #
-  # Once SAML support is enabled, a metadata file will be exposed at
-  # https://<server>:<port>/_matrix/saml2/metadata.xml, which you may be able to
-  # use to configure your SAML IdP with. Alternatively, you can manually configure
-  # the IdP to use an ACS location of
-  # https://<server>:<port>/_matrix/saml2/authn_response.
-  #
-  saml2_config:
-    # `sp_config` is the configuration for the pysaml2 Service Provider.
-    # See pysaml2 docs for format of config.
-    #
-    # Default values will be used for the 'entityid' and 'service' settings,
-    # so it is not normally necessary to specify them unless you need to
-    # override them.
-    #
-    # sp_config:
-    #   # point this to the IdP's metadata. You can use either a local file or
-    #   # (preferably) a URL.
-    #   metadata:
-    #     #local: ["saml2/idp.xml"]
-    #     remote:
-    #       - url: https://our_idp/metadata.xml
-    #
-    #    # By default, the user has to go to our login page first. If you'd like
-    #    # to allow IdP-initiated login, set 'allow_unsolicited: true' in a
-    #    # 'service.sp' section:
-    #    #
-    #    # service:
-    #    #   sp:
-    #    #     allow_unsolicited: true
-    #
-    #    # The examples below are just used to generate our metadata xml, and you
-    #    # may well not need them, depending on your setup. Alternatively you
-    #    # may need a whole lot more detail - see the pysaml2 docs!
-    #
-    #    description: ["My awesome SP", "en"]
-    #    name: ["Test SP", "en"]
-    #
-    #    organization:
-    #      name: Example com
-    #      display_name:
-    #        - ["Example co", "en"]
-    #      url: "http://example.com"
-    #
-    #    contact_person:
-    #      - given_name: Bob
-    #        sur_name: "the Sysadmin"
-    #        email_address": ["admin@example.com"]
-    #        contact_type": technical
-
-    # Instead of putting the config inline as above, you can specify a
-    # separate pysaml2 configuration file:
-    #
-    # config_path: "CONFDIR/sp_conf.py"
-
-    # the lifetime of a SAML session. This defines how long a user has to
-    # complete the authentication process, if allow_unsolicited is unset.
-    # The default is 5 minutes.
-    #
-    # saml_session_lifetime: 5m
-
-    # An external module can be provided here as a custom solution to
-    # mapping attributes returned from a saml provider onto a matrix user.
-    #
-    user_mapping_provider:
-      # The custom module's class. Uncomment to use a custom module.
-      #
-      # module: mapping_provider.SamlMappingProvider
-
-      # Custom configuration values for the module. Below options are
-      # intended for the built-in provider, they should be changed if
-      # using a custom module. This section will be passed as a Python
-      # dictionary to the module's `parse_config` method.
-      #
-      config:
-      # The SAML attribute (after mapping via the attribute maps) to use
-      # to derive the Matrix ID from. 'uid' by default.
-      #
-      # Note: This used to be configured by the
-      # saml2_config.mxid_source_attribute option. If that is still
-      # defined, its value will be used instead.
-      #
-      # mxid_source_attribute: displayName
-
-      # The mapping system to use for mapping the saml attribute onto a
-      # matrix ID.
-      #
-      # Options include:
-      #  * 'hexencode' (which maps unpermitted characters to '=xx')
-      #  * 'dotreplace' (which replaces unpermitted characters with
-      #     '.').
-      # The default is 'hexencode'.
-      #
-      # Note: This used to be configured by the
-      # saml2_config.mxid_mapping option. If that is still defined, its
-      # value will be used instead.
-      #
-      # mxid_mapping: dotreplace
-    # In previous versions of synapse, the mapping from SAML attribute to MXID was
-    # always calculated dynamically rather than stored in a table. For backwards-
-    # compatibility, we will look for user_ids matching such a pattern before
-    # creating a new account.
-    #
-    # This setting controls the SAML attribute which will be used for this
-    # backwards-compatibility lookup. Typically it should be 'uid', but if the
-    # attribute maps are changed, it may be necessary to change it.
-    #
-    # The default is 'uid'.
-    #
-    # grandfathered_mxid_source_attribute: upn
-
-    # Directory in which Synapse will try to find the template files below.
-    # If not set, default templates from within the Synapse package will be used.
-    #
-    # DO NOT UNCOMMENT THIS SETTING unless you want to customise the templates.
-    # If you *do* uncomment it, you will need to make sure that all the templates
-    # below are in the directory.
-    #
-    # Synapse will look for the following templates in this directory:
-    #
-    # * HTML page to display to users if something goes wrong during the
-    #   authentication process: 'saml_error.html'.
-    #
-    #   When rendering, this template is given the following variables:
-    #     * code: an HTML error code corresponding to the error that is being
-    #       returned (typically 400 or 500)
-    #
-    #     * msg: a textual message describing the error.
-    #
-    #   The variables will automatically be HTML-escaped.
-    #
-    # You can see the default templates at:
-    # https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
-    #
-    # template_dir: "res/templates"
-  # OpenID Connect integration. The following settings can be used to make Synapse
-  # use an OpenID Connect Provider for authentication, instead of its internal
-  # password database.
-  #
-  # See https://github.com/matrix-org/synapse/blob/master/openid.md.
-  #
-  oidc_config:
-    # Uncomment the following to enable authorization against an OpenID Connect
-    # server. Defaults to false.
-    #
-    # enabled: true
-
-    # Uncomment the following to disable use of the OIDC discovery mechanism to
-    # discover endpoints. Defaults to true.
-    #
-    # discover: false
-
-    # the OIDC issuer. Used to validate tokens and (if discovery is enabled) to
-    # discover the provider's endpoints.
-    #
-    # Required if 'enabled' is true.
-    #
-    # issuer: "https://accounts.example.com/"
-
-    # oauth2 client id to use.
-    #
-    # Required if 'enabled' is true.
-    #
-    # client_id: "provided-by-your-issuer"
-
-    # oauth2 client secret to use.
-    #
-    # Required if 'enabled' is true.
-    #
-    # client_secret: "provided-by-your-issuer"
-
-    # auth method to use when exchanging the token.
-    # Valid values are 'client_secret_basic' (default), 'client_secret_post' and
-    # 'none'.
-    #
-    # client_auth_method: client_secret_post
-
-    # list of scopes to request. This should normally include the "openid" scope.
-    # Defaults to ["openid"].
-    #
-    # scopes: ["openid", "profile"]
-
-    # the oauth2 authorization endpoint. Required if provider discovery is disabled.
-    #
-    # authorization_endpoint: "https://accounts.example.com/oauth2/auth"
-
-    # the oauth2 token endpoint. Required if provider discovery is disabled.
-    #
-    # token_endpoint: "https://accounts.example.com/oauth2/token"
-
-    # the OIDC userinfo endpoint. Required if discovery is disabled and the
-    # "openid" scope is not requested.
-    #
-    # userinfo_endpoint: "https://accounts.example.com/userinfo"
-
-    # URI where to fetch the JWKS. Required if discovery is disabled and the
-    # "openid" scope is used.
-    #
-    # jwks_uri: "https://accounts.example.com/.well-known/jwks.json"
-
-    # Uncomment to skip metadata verification. Defaults to false.
-    #
-    # Use this if you are connecting to a provider that is not OpenID Connect
-    # compliant.
-    # Avoid this in production.
-    #
-    # skip_verification: true
-
-    # An external module can be provided here as a custom solution to mapping
-    # attributes returned from a OIDC provider onto a matrix user.
-    #
-    user_mapping_provider:
-      # The custom module's class. Uncomment to use a custom module.
-      # Default is 'synapse.handlers.oidc_handler.JinjaOidcMappingProvider'.
-      #
-      # See https://github.com/matrix-org/synapse/blob/master/docs/sso_mapping_providers.md#openid-mapping-providers
-      # for information on implementing a custom mapping provider.
-      #
-      # module: mapping_provider.OidcMappingProvider
-
-      # Custom configuration values for the module. This section will be passed as
-      # a Python dictionary to the user mapping provider module's `parse_config`
-      # method.
-      #
-      # The examples below are intended for the default provider: they should be
-      # changed if using a custom provider.
-      #
-      config:
-        # name of the claim containing a unique identifier for the user.
-        # Defaults to `sub`, which OpenID Connect compliant providers should provide.
-        #
-        # subject_claim: "sub"
-
-        # Jinja2 template for the localpart of the MXID.
-        #
-        # When rendering, this template is given the following variables:
-        #   * user: The claims returned by the UserInfo Endpoint and/or in the ID
-        #     Token
-        #
-        # This must be configured if using the default mapping provider.
-        #
-        # Jinja2 escaping https://stackoverflow.com/a/55464045/9669328
-        localpart_template: "{% raw %}{{ user.preferred_username }}{% endraw %}"
-        # Jinja2 template for the display name to set on first login.
-        #
-        # If unset, no displayname will be set.
-        #
-        # display_name_template: "{% raw %}{{ user.given_name }} {{ user.last_name }}{% endraw %}"
-  # Enable CAS for registration and login.
-  # cas_config:
-  #    enabled: true
-  #   server_url: "https://cas-server.com"
-  #   service_url: "https://homeserver.domain.com:8448"
-  #   #displayname_attribute: name
-  #   #required_attributes:
-  #   #    name: value
-
-  # Additional settings to use with single-sign on systems such as OpenID Connect,
-  # SAML2 and CAS.
-  #
-  sso:
-  # A list of client URLs which are whitelisted so that the user does not
-  # have to confirm giving access to their account to the URL. Any client
-  # whose URL starts with an entry in the following list will not be subject
-  # to an additional confirmation step after the SSO login is completed.
-  #
-  # WARNING: An entry such as "https://my.client" is insecure, because it
-  # will also match "https://my.client.evil.site", exposing your users to
-  # phishing attacks from evil.site. To avoid this, include a slash after the
-  # hostname: "https://my.client/".
-  #
-  # If public_baseurl is set, then the login fallback page (used by clients
-  # that don't natively support the required login flows) is whitelisted in
-  # addition to any URLs in this list.
-  #
-  # By default, this list is empty.
-  #
-  # client_whitelist:
-  #   - https://riot.im/develop
-  #   - https://my.custom.client/
-
-  # Directory in which Synapse will try to find the template files below.
-  # If not set, default templates from within the Synapse package will be used.
-  #
-  # DO NOT UNCOMMENT THIS SETTING unless you want to customise the templates.
-  # If you *do* uncomment it, you will need to make sure that all the templates
-  # below are in the directory.
-  #
-  # Synapse will look for the following templates in this directory:
-  #
-  # * HTML page for a confirmation step before redirecting back to the client
-  #   with the login token: 'sso_redirect_confirm.html'.
-  #
-  #   When rendering, this template is given three variables:
-  #     * redirect_url: the URL the user is about to be redirected to. Needs
-  #                     manual escaping (see
-  #                     https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
-  #
-  #     * display_url: the same as `redirect_url`, but with the query
-  #                    parameters stripped. The intention is to have a
-  #                    human-readable URL to show to users, not to use it as
-  #                    the final address to redirect to. Needs manual escaping
-  #                    (see https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
-  #
-  #     * server_name: the homeserver's name.
-  #
-  # * HTML page which notifies the user that they are authenticating to confirm
-  #   an operation on their account during the user interactive authentication
-  #   process: 'sso_auth_confirm.html'.
-  #
-  #   When rendering, this template is given the following variables:
-  #     * redirect_url: the URL the user is about to be redirected to. Needs
-  #                     manual escaping (see
-  #                     https://jinja.palletsprojects.com/en/2.11.x/templates/#html-escaping).
-  #
-  #     * description: the operation which the user is being asked to confirm
-  #
-  # * HTML page shown after a successful user interactive authentication session:
-  #   'sso_auth_success.html'.
-  #
-  #   Note that this page must include the JavaScript which notifies of a successful authentication
-  #   (see https://matrix.org/docs/spec/client_server/r0.6.0#fallback).
-  #
-  #   This template has no additional variables.
-  #
-  # * HTML page shown during single sign-on if a deactivated user (according to Synapse's database)
-  #   attempts to login: 'sso_account_deactivated.html'.
-  #
-  #   This template has no additional variables.
-  #
-  # * HTML page to display to users if something goes wrong during the
-  #   OpenID Connect authentication process: 'sso_error.html'.
-  #
-  #   When rendering, this template is given two variables:
-  #     * error: the technical name of the error
-  #     * error_description: a human-readable message for the error
-  #
-  # You can see the default templates at:
-  # https://github.com/matrix-org/synapse/tree/master/synapse/res/templates
-  #
-  # template_dir: "res/templates"
-
   # The JWT needs to contain a globally unique "sub" (subject) claim.
   #
   # jwt_config:
@@ -1288,7 +936,7 @@ synapse_homeserver: &synapse_homeserver_defaults
   #   smtp_user: "exampleusername"
   #   smtp_pass: "examplepassword"
     require_transport_security: false
-    notif_from: "Your Friendly %(app)s Home Server <noreply@{{ synapse_domain }}>"
+    notif_from: "Your Friendly %(app)s Home Server <noreply@{{ synapse_server_name }}>"
   #   app_name: Matrix
   #   template_dir: res/templates
   #   notif_template_html: notif_mail.html

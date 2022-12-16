@@ -2,6 +2,32 @@
 - name: Synapse checks
   block:
 
+    - name: Set a fact for the homeserver YAML when synapse_homeserver_combine is not defined
+      ansible.builtin.set_fact:
+        synapse_homeserver_proposed_config: "{{ synapse_homeserver }}"        
+      when: synapse_homeserver_combine is not defined
+
+    - name: Set a fact for the homeserver YAML when synapse_homeserver_combine is defined
+      ansible.builtin.set_fact:
+        synapse_homeserver_proposed_config: "{{ synapse_homeserver | ansible.builtin.combine(synapse_homeserver_combine, list_merge='replace', recursive=True) }}"
+      when: synapse_homeserver_combine is defined
+
+    - name: The synapse_homeserver_proposed_config dictionary is required
+      ansible.builtin.assert:
+        that:
+          - synapse_homeserver_proposed_config is defined
+          - synapse_homeserver_proposed_config | type_debug == "dict"
+
+    - name: Debug the synapse_homeserver_proposed_config dictionary
+      ansible.builtin.debug:
+        var: synapse_homeserver_proposed_config
+        verbosity: 2
+
+    - name: Debug the synapse_homeserver_proposed_config.tls_certificate_path
+      ansible.builtin.debug:
+        var: synapse_homeserver_proposed_config.tls_certificate_path
+        verbosity: 2
+
     - name: Check Debian version
       ansible.builtin.assert:
         that:
@@ -29,7 +55,7 @@
 
     - name: Stat the TLS certificate path
       ansible.builtin.stat:
-        path: "{{ synapse_homeserver.tls_certificate_path }}"
+        path: "{{ synapse_homeserver_proposed_config.tls_certificate_path }}"
       register: synapse_cert
 
     - name: Debug synapse_cert
@@ -37,9 +63,14 @@
         var: synapse_cert
         verbosity: 2
 
+    - name: Debug the TLS key path
+      ansible.builtin.debug:
+        var: synapse_homeserver_proposed_config.tls_private_key_path
+        verbosity: 2
+
     - name: Stat the TLS key path
       ansible.builtin.stat:
-        path: "{{ synapse_homeserver.tls_private_key_path }}"
+        path: "{{ synapse_homeserver_proposed_config.tls_private_key_path }}"
       register: synapse_key
 
     - name: Debug synapse_key
@@ -52,7 +83,7 @@
 
         - name: Read TLS cert information
           community.crypto.x509_certificate_info:
-            path: "{{ synapse_homeserver.tls_certificate_path }}"
+            path: "{{ synapse_homeserver_proposed_config.tls_certificate_path }}"
             valid_at:
               tomorrow: "+1d"
           register: synapse_cert_info
@@ -132,11 +163,6 @@
         - name: Debug /etc/matrix-synapse/homeserver.yaml first line
           ansible.builtin.debug:
             var: synapse_homeserver_existing_config_lines[0]
-            verbosity: 2
-
-        - name: Debug synapse_homeserver dictionary
-          ansible.builtin.debug:
-            var: synapse_homeserver
             verbosity: 2
 
         - name: Stat the original backup of /etc/matrix-synapse/homeserver.yaml

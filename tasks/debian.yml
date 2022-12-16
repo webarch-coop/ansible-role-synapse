@@ -25,11 +25,11 @@
       ansible.builtin.debconf:
         name: matrix-synapse
         question: matrix-synapse/server-name
-        value: "{{ synapse_domain }}"
+        value: "{{ synapse_server_name }}"
         vtype: text
       when: >-
         ( synapse_debconf['server-name'] is not defined ) or
-        ( synapse_debconf['server-name'] != synapse_domain )
+        ( synapse_debconf['server-name'] != synapse_server_name )
 
     - name: Debconf report-stats
       ansible.builtin.debconf:

@@ -1,10 +1,14 @@
 # {{ ansible_managed }}
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name matrix.{{ synapse_domain }};
-    ssl_certificate "{{ synapse_homeserver.tls_certificate_path }}";
-    ssl_certificate_key "{{ synapse_homeserver.tls_private_key_path }}";
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server;
+    server_name {{ synapse_server_name }};
+    ssl_certificate "{{ synapse_homeserver_proposed_config.tls_certificate_path }}";
+    ssl_certificate_key "{{ synapse_homeserver_proposed_config.tls_private_key_path }}";
+    root /var/www/html;
+    location /.well-known/acme-challenge/ {
+        allow all;
+    }
     location ~ ^(/_matrix|/_synapse/client) {
         proxy_pass http://localhost:8008;
         proxy_set_header X-Forwarded-For $remote_addr;
@@ -13,15 +17,20 @@ server {
         client_max_body_size {{ synapse_homeserver.max_upload_size }};
         proxy_http_version 1.1;
     }
+{% if synapse_homeserver.web_client_location is defined %}
+    location / {
+        return 301 {{ synapse_homeserver.web_client_location }};
+    }
+{% endif %}
 }
 server {
     listen 8448 ssl http2 default_server;
     listen [::]:8448 ssl http2 default_server;
-    server_name {{ synapse_domain }};
-    ssl_certificate "{{ synapse_homeserver.tls_certificate_path }}";
-    ssl_certificate_key "{{ synapse_homeserver.tls_private_key_path }}";
+    server_name {{ synapse_server_name }};
+    ssl_certificate "{{ synapse_homeserver_proposed_config.tls_certificate_path }}";
+    ssl_certificate_key "{{ synapse_homeserver_proposed_config.tls_private_key_path }}";
     location /.well-known/matrix/client {
-        return 200 '{"m.homeserver": {"base_url": "https://{{ synapse_domain }}"}}';
+        return 200 '{"m.homeserver": {"base_url": "https://{{ synapse_server_name }}"}}';
         default_type application/json;
         add_header Access-Control-Allow-Origin *;
     }
@@ -33,5 +42,10 @@ server {
         client_max_body_size {{ synapse_homeserver.max_upload_size }};
         proxy_http_version 1.1;
     }
+{% if synapse_homeserver.web_client_location is defined %}
+    location / {
+        return 301 {{ synapse_homeserver.web_client_location }};
+    }
+{% endif %}
 }
 # vim: ft=nginx:

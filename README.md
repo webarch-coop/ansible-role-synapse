@@ -2,7 +2,7 @@
 
 [![pipeline status](https://git.coop/webarch/synapse/badges/main/pipeline.svg)](https://git.coop/webarch/synapse/-/commits/main)
 
-This repo will contain an Ansible role to install, configure and upgrade [synapse](https://matrix-org.github.io/synapse/latest/), see also the [synapse-server](https://git.coop/webarch/synapse-server) repo for an example of how to use this role.
+This repo contains an Ansible role to install, configure and upgrade [synapse](https://matrix-org.github.io/synapse/latest/), see also the [synapse-server](https://git.coop/webarch/synapse-server) repo for an example of how to use this role.
 
 ## Synapse configuration
 
@@ -18,39 +18,52 @@ A boolean, set `synapse` to `true` to run the tasks in this role.
 
 #### synapse_db
 
-A dictionary containing the database configuration details, which are written to `/etc/matrix-synapse/conf.d/database.yaml`, these settings can be fully replaced via group or host variables or partially replaced using [YAML anchors and aliases](https://docs.ansible.com/ansible/7/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values), for example:
+A dictionary containing the database configuration details, which are written to `/etc/matrix-synapse/conf.d/database.yaml`, for example to use SQLite  rather than PostgreSQL:
 
 ```yaml
 synapse_db:
-  <<: *synapse_db_defaults
   database:
     name: "sqlite3"
     args:
       database: "/var/lib/matrix-synapse/homeserver.db"
 ```
 
-#### synapse_client_domain
+#### synapse_homeserver
 
-The domain name that clients will use to connect to the server on port 443, `synapse_client_domain` defaults to `matrix.{{ inventory_hostname }}`.
+A required dictionary to be written as the main configuration file to `/etc/matrix-synapse/homeserver.yaml` see [the documentation](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html) for all the options.
 
-#### synapse_federation_domain
+The dictionary for `synapse_homeserver` in the [defaults/main.yml](defaults/main.yml) contains comments that are not written to the server.
 
-The domain name that other server will use to connect to on port 8448, `synapse_federation_domain` defaults to `{{ inventory_hostname }}`.
+#### synapse_homeserver_combine
+
+A optional dictionary that is combined with the `synapse_homeserver` dictionary using the [ansible.builtin.combine filter](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/combine_filter.html) with the `list_merge` parameter set to `replace` and `recursive` set to `true`, this means that individual variables in the `synapse_homeserver` dictionary can be replaced without having to redefine all the defaults.
+
+By default `synapse_homeserver_combine` is not defined, an example of how it can be used, to set the `web_client_location` variable in `/etc/matrix-synapse/homeserver.yaml`:
+
+```yaml
+synapse_homeserver_combine:
+  web_client_location: "https://{{ element_domain }}/"
+```
+
+The result of combining `synapse_homeserver` and `synapse_homeserver_combine` is defined as `synapse_homeserver_proposed_config`, the existing `/etc/matrix-synapse/homeserver.yaml` confguration is read and defined as `synapse_homeserver_existing_config`.
+
+#### synapse_server_name
+
+The domain name to use for the [server_name](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#server_name), this is used for addresses, for example if the `server_name` was `example.com`, usernames on your server would be in the format `@user:example.com`.
 
 #### synapse_source
 
 The source of the `matrix-synapse` package, this curently defaults to `debian`, in the future `synapse` might also be supported for installing the upstream package.
 
-#### synapse_homeserver
+## Single sign-on
 
-A dictionary to be written as the main configuration file to `/etc/matrix-synapse/homeserver.yaml`, these settings can be fully replaced via group or host variables or partially replaced using [YAML anchors and aliases](https://docs.ansible.com/ansible/7/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values), for example:
+Note that if `synapse_homeserver_combine` is defined then variables set in `synapse_homeserver` can't use Jinja2 escaping, for example:
 
 ```yaml
-synapse_homeserver:
-  <<: *synapse_homeserver_defaults
-  report_stats: true
-
+        localpart_template: "{% raw %}{{ user.preferred_username }}{% endraw %}"
 ```
+
+As it will result in Ansible looking for the `user` variable, for this reason the default SSO settings are written to `/etc/matrix-synapse/conf.d/sso.yaml.example`, move this file to `/etc/matrix-synapse/conf.d/sso.yaml` and edit it as required to configure SSO.
 
 ## Notes
 
