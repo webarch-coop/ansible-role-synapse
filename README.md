@@ -6,19 +6,7 @@ This repo will contain an Ansible role to install, configure and upgrade [synaps
 
 ## Synapse configuration
 
-### Debian debconf
-
 This role uses `debconf` to set the `server_name` and `report_stats` variables, which results in values for these variables being written to files in `/etc/matrix-synapse/conf.d`.
-
-## Homeserver configuration
-
-The main configuration file, `/etc/matrix-synapse/homeserver.yaml` is backed up to `/etc/matrix-synapse/.homeserver.original.bak.yaml` and then replaced with the `synapse_homeserver` dictionary set via the [defaults/main.yml](defaults/main.yml).
-
-#### Database configuration
-
-See `synapse_db` below.
-
-#### Synapse secret strings
 
 The `form_secret`, `macaroon_secret_key` and `registration_shared_secret` variables are randomly generated on the server and written to files in  `/etc/matrix-synapse/conf.d`.
 
