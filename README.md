@@ -49,7 +49,7 @@ synapse_homeserver_combine:
   web_client_location: "https://{{ element_domain }}/"
 ```
 
-The result of combining `synapse_homeserver` and `synapse_homeserver_combine` is defined as `synapse_homeserver_proposed_config`, the existing `/etc/matrix-synapse/homeserver.yaml` confguration is read and defined as `synapse_homeserver_existing_config`.
+Internally to this role, the result of combining `synapse_homeserver` and `synapse_homeserver_combine` is defined as `synapse_homeserver_proposed_config`, the existing `/etc/matrix-synapse/homeserver.yaml` confguration is read and defined as `synapse_homeserver_existing_config`.
 
 #### synapse_server_name
 
@@ -71,7 +71,7 @@ As it will result in Ansible looking for the `user` variable, for this reason th
 
 ## Notes
 
-Generate a example config file:
+Generate an example config file:
 
 ```bash
 usr/bin/python3 -m synapse.app.homeserver --config-path=/etc/matrix-synapse/test.yml \
