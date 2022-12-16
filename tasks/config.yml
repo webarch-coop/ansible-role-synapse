@@ -14,8 +14,8 @@
 
     - name: Copy the SSO example configuration
       ansible.builtin.copy:
-        src: sso.yaml.example
-        dest: /etc/matrix-synapse/conf.d/sso.yaml.example
+        src: sso_example.yml
+        dest: /etc/matrix-synapse/sso_example.yml
         mode: 0644
         owner: root
         group: root
