@@ -41,9 +41,11 @@ synapse_db:
 
 `synapse_homeserver` is a required dictionary that is written, as the main `matrix-synapse` configuration file to `/etc/matrix-synapse/homeserver.yaml` see [the documentation](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html) for all the options.
 
+The original `/etc/matrix-synapse/homeserver.yaml` file that is created by the `matrix-synapse` `.deb` package is moved to `/etc/matrix-synapse/.homeserver.original.bak.yaml` before this role overwrites the configuration.
+
 The dictionary for `synapse_homeserver` in [defaults/main.yml](defaults/main.yml) contains comments which are omitted when `/etc/matrix-synapse/homeserver.yaml` is written to the server.
 
-The original `/etc/matrix-synapse/homeserver.yaml` file is moved to `/etc/matrix-synapse/.homeserver.original.bak.yaml` before this role overwrites the configuration.
+You can either define a full set of configuration using `synapse_homeserver` (apart from the `synapse_db`, `form_secret`, `macaroon_secret_key` and `registration_shared_secret` variables) or use the `synapse_homeserver_combine` dictionary to overwrite specific configuration in the `synapse_homeserver` dictionary.
 
 #### synapse_homeserver_combine
 
@@ -60,7 +62,7 @@ Internally to this role, the result of combining `synapse_homeserver` and `synap
 
 #### synapse_server_name
 
-`synapse_server_name` is a required domain name that is used for the [server_name](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#server_name), this is used for addresses, for example if the `server_name` was `example.com`, usernames on your server would be in the format `@user:example.com`.
+`synapse_server_name` is a required domain name that is used for the [server_name](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#server_name) and is set using [debconf](https://wiki.debian.org/debconf), this is used for addresses, for example if the `server_name` was `example.com`, usernames on your server would be in the format `@user:example.com`.
 
 #### synapse_source
 
