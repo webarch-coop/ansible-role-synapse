@@ -5,9 +5,11 @@
     - name: Include synapse checks
       ansible.builtin.include_tasks: checks.yml
       tags:
+        - synapse_acmesh
         - synapse_apt
         - synapse_checks
         - synapse_config
+        - synapse_postgresql
 
     - name: Include synapse install tasks when installing from Debian apt repos
       ansible.builtin.include_tasks: debian.yml
@@ -26,7 +28,9 @@
       ansible.builtin.include_tasks: config.yml
       when: synapse_etc_homeserver_yaml.stat.exists | bool
       tags:
+        - synapse_acmesh
         - synapse_config
+        - synapse_postgresql
 
   when: synapse | bool
   tags:

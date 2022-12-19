@@ -27,6 +27,8 @@
       vars:
         acmesh_common_name: "{{ synapse_server_name }}"
         acmesh_reloadcmd: service nginx restart
+      tags:
+        - synapse_acmesh
 
     - name: Include PostgreSQL role to get the password
       ansible.builtin.include_role:
@@ -35,6 +37,8 @@
       vars:
         postgresql_db: "{{ synapse_db.database.args.database }}"
         postgresql_user: "{{ synapse_db.database.args.user }}"
+      tags:
+        - synapse_postgresql
 
     - name: Set a fact for the PostgreSQL password
       ansible.builtin.set_fact:
