@@ -68,7 +68,7 @@ Internally to this role, the result of combining `synapse_homeserver` and `synap
 
 #### synapse_server_name
 
-`synapse_server_name` is a required domain name that is used for the [server_name](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#server_name) and is set using [debconf](https://wiki.debian.org/debconf), this is used for addresses, for example if the `server_name` was `example.com`, usernames on your server would be in the format `@user:example.com`.
+`synapse_server_name` is a required domain name that is used for the [server_name](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#server_name) and is set using [debconf](https://wiki.debian.org/debconf), is written to `/etc/matrix-synapse/conf.d/server_name.yaml` and is used for addresses, for example if the `server_name` was `example.com`, usernames on your server would be in the format `@user:example.com`.
 
 #### synapse_source
 
