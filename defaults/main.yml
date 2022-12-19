@@ -22,7 +22,6 @@ synapse_db:
       keepalives_count: 3
 synapse_server_name: "{{ inventory_hostname }}"
 synapse_source: debian
-# https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_advanced_syntax.html#yaml-anchors-and-aliases-sharing-variable-values
 synapse_homeserver:
   # PEM encoded X509 certificate for TLS.
   # You can replace the self-signed certificate that synapse
