@@ -19,7 +19,7 @@ In addition the `form_secret`, `macaroon_secret_key` and `registration_shared_se
 
 The database configuration is also written to a file in `/etc/matrix-synapse/conf.d`, see `synapse_db` below.
 
-The main `/etc/matrix-synapse/homeserver.yaml` configuration file variables can either be set using `synapse_homeserver` to define everythnig (apart from the variables noted above) or `synapse_homeserver_combine` can be set to overwrite parts of the `synapse_homeserver` dictionary.
+The main `/etc/matrix-synapse/homeserver.yaml` configuration file variables can either be set using `synapse_homeserver` to define everything (apart from the variables noted above) or `synapse_homeserver_combine` can be set to overwrite parts of the `synapse_homeserver` dictionary.
 
 Note that since the SSO configuration section of `/etc/matrix-synapse/homeserver.yaml` uses Jinga2 templating this configuration is probably best done manually, more on this below.
 
