@@ -23,7 +23,7 @@ The main `/etc/matrix-synapse/homeserver.yaml` configuration file variables can 
 
 Note that since the SSO configuration section of `/etc/matrix-synapse/homeserver.yaml` uses Jinga2 templating this configuration is probably best done manually, more on this below.
 
-## Defaults
+## Role variables
 
 The following [defaults/main.yml](defaults/main.yml) default variables are set by this role.
 
@@ -92,3 +92,17 @@ Generate an example config file:
 usr/bin/python3 -m synapse.app.homeserver --config-path=/etc/matrix-synapse/test.yml \
   --generate-config --report-stats=no -H $(hostname -f)
 ```
+
+## Dependencies
+
+This role requires Ansible `2.13` or newer plus [JC](https://pypi.org/project/jc/) and [JMESPath](https://pypi.org/project/jmespath/) to be installed using `pip3` on the Ansible controller.
+
+## Repository
+
+The primary URL of this repo is [`https://git.coop/webarch/synapse`](https://git.coop/webarch/synapse) however it is also [mirrored to GitHub](https://github.com/webarch-coop/ansible-role-synapse) and [available via Ansible Galaxy](https://galaxy.ansible.com/chriscroome/synapse).
+
+If you use this role please use a tagged release, see [the release notes](https://git.coop/webarch/synapse/-/releases).
+
+## License
+
+This role is released under [the same terms as Ansible itself](https://github.com/ansible/ansible/blob/devel/COPYING), the [GNU GPLv3](LICENSE).
