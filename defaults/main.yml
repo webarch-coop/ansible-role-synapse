@@ -929,9 +929,11 @@ synapse_homeserver:
   # smtp_pass variables should be used
   #
   email:
-    enable_notifs: false
+    enable_notifs: true
     smtp_host: "localhost"
     smtp_port: 25
+    enable_tls: false
+    force_tls: false
   #   smtp_user: "exampleusername"
   #   smtp_pass: "examplepassword"
     require_transport_security: false
