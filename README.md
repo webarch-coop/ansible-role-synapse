@@ -25,7 +25,7 @@ Note that since the SSO configuration section of `/etc/matrix-synapse/homeserver
 
 ## Role variables
 
-The following [defaults/main.yml](defaults/main.yml) default variables are set by this role.
+See the [defaults/main.yml](defaults/main.yml) file for the default variables and [meta/argument_spacs.yml](meta/argument_specs.yml) for the variable specification.
 
 #### synapse
 
