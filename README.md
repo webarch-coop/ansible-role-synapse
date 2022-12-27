@@ -23,6 +23,8 @@ The main `/etc/matrix-synapse/homeserver.yaml` configuration file variables can 
 
 Note that since the SSO configuration section of `/etc/matrix-synapse/homeserver.yaml` uses Jinga2 templating this configuration is probably best done manually, more on this below.
 
+At the end of the initial run of this role the `matrix-synapse.service` restart fails, however after a reboot it should be fine.
+
 ## Role variables
 
 See the [defaults/main.yml](defaults/main.yml) file for the default variables and [meta/argument_spacs.yml](meta/argument_specs.yml) for the variable specification.
