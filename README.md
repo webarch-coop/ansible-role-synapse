@@ -86,7 +86,18 @@ Note that if `synapse_homeserver_combine` is defined then variables set in `syna
 
 As it will result in Ansible looking for the `user` variable, for this reason the default SSO settings are written to `/etc/matrix-synapse/sso_example.yaml`, move this file to `/etc/matrix-synapse/conf.d/sso.yaml` and edit it as required to configure SSO.
 
+## TODO
+
+* [Coturn](https://matrix-org.github.io/synapse/latest/turn-howto.html)
+* [Hardening](https://matrix-org.github.io/synapse/latest/systemd-with-workers/index.html#hardening)
+
 ## Notes
+
+Add a user:
+
+```bash
+synapse_register_new_matrix_user -k "$(yq .registration_shared_secret /etc/matrix-synapse/conf.d/registration_shared_secret.yaml )" http://localhost:8008
+```
 
 Generate an example config file:
 
