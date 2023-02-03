@@ -55,6 +55,7 @@
             pkg:
               - libpq5
               - matrix-synapse
+              - python3-authlib
             state: latest
             default_release: "{{ ansible_distribution_release }}-backports"
           when: ( "-backports" in synapse_apt_cache_policy_synapse.stdout )
@@ -67,6 +68,7 @@
         pkg:
           - libpq5
           - matrix-synapse
+          - python3-authlib
         state: present
       when: ansible_distribution_release != "bullseye"
       notify: Restart matrix-synapse
