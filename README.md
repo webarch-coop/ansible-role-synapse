@@ -27,7 +27,7 @@ At the end of the initial run of this role the `matrix-synapse.service` restart 
 
 ## Role variables
 
-See the [defaults/main.yml](defaults/main.yml) file for the default variables and [meta/argument_spacs.yml](meta/argument_specs.yml) for the variable specification.
+See the [defaults/main.yml](defaults/main.yml) file for the default variables and [meta/argument_specs.yml](meta/argument_specs.yml) for the variable specification.
 
 #### synapse
 
