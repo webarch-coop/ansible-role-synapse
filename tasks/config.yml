@@ -1,3 +1,12 @@
+# Copyright 2019-2023 Chris Croome
+#
+# This file is part of the Webarchitects Synapse Ansible role.
+#
+# The Webarchitects Synapse Ansible role is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# The Webarchitects Synapse Ansible role is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with the Webarchitects Synapse Ansible role. If not, see <https://www.gnu.org/licenses/>.
 ---
 - name: Configure synapse
   block:
@@ -6,7 +15,7 @@
       ansible.builtin.copy:
         src: /etc/matrix-synapse/homeserver.yaml
         dest: "{{ synapse_homeserver_backup }}"
-        mode: 0600
+        mode: "0600"
         remote_src: true
       when:
         - not synapse_homeserver_backup_check.stat.exists | bool
@@ -16,7 +25,7 @@
       ansible.builtin.copy:
         src: sso_example.txt
         dest: /etc/matrix-synapse/sso_example.yaml
-        mode: 0644
+        mode: "0644"
         owner: root
         group: root
 
@@ -50,7 +59,7 @@
         src: database.yaml.j2
         dest: /etc/matrix-synapse/conf.d/database.yaml
         backup: true
-        mode: 0640
+        mode: "0640"
         owner: root
         group: matrix-synapse
       when: >-
@@ -70,7 +79,7 @@
         src: homeserver.yaml.j2
         dest: /etc/matrix-synapse/homeserver.yaml
         backup: true
-        mode: 0640
+        mode: "0640"
         owner: root
         group: matrix-synapse
       when: synapse_homeserver_existing_config != synapse_homeserver_proposed_config
@@ -84,7 +93,7 @@
             src: nginx.conf.j2
             dest: "/etc/nginx/sites-available/{{ synapse_server_name }}.conf"
             backup: true
-            mode: 0644
+            mode: "0644"
             owner: root
             group: root
 
@@ -99,7 +108,7 @@
             src: "/etc/nginx/sites-available/{{ synapse_server_name }}.conf"
             dest: "/etc/nginx/sites-enabled/{{ synapse_server_name }}.conf"
             follow: false
-            mode: 0777
+            mode: "0777"
             owner: root
             group: root
           when: synapse_nginx_site_available.stat.exists | bool
@@ -115,7 +124,7 @@
       community.crypto.openssl_dhparam:
         path: /etc/matrix-synapse/homeserver.tls.dh
         size: 4096
-        mode: 0640
+        mode: "0640"
         owner: root
         group: matrix-synapse
       notify: Restart matrix-synapse

@@ -1,3 +1,12 @@
+# Copyright 2019-2023 Chris Croome
+#
+# This file is part of the Webarchitects Synapse Ansible role.
+#
+# The Webarchitects Synapse Ansible role is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# The Webarchitects Synapse Ansible role is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with the Webarchitects Synapse Ansible role. If not, see <https://www.gnu.org/licenses/>.
 ---
 - name: Synapse Debian install
   block:
@@ -14,7 +23,7 @@
 
     - name: Set a fact for the debconf for matrix-synapse
       ansible.builtin.set_fact:
-        synapse_debconf: "{{ synapse_debconf_show.stdout | community.general.jc('kv') }}"
+        synapse_debconf: "{{ synapse_debconf_show.stdout | string | community.general.jc('kv') }}"
 
     - name: Debug the debconf settings for matrix-synapse
       ansible.builtin.debug:
@@ -93,7 +102,7 @@
       ansible.builtin.file:
         path: /etc/matrix-synapse
         state: directory
-        mode: 0750
+        mode: "0750"
         owner: root
         group: matrix-synapse
 
