@@ -41,6 +41,11 @@
         ( synapse_debconf['report-stats'] is not defined ) or
         ( synapse_debconf['report-stats'] != synapse_homeserver.report_stats )
 
+    - name: Requirements present
+      ansible.builtin.apt:
+        pkg:
+          - python3-authlib
+
     - name: Synapse present from backports on Debian Bullseye
       block:
 
@@ -55,7 +60,6 @@
             pkg:
               - libpq5
               - matrix-synapse
-              - python3-authlib
             state: latest
             default_release: "{{ ansible_distribution_release }}-backports"
           when: ( "-backports" in synapse_apt_cache_policy_synapse.stdout )
@@ -68,7 +72,6 @@
         pkg:
           - libpq5
           - matrix-synapse
-          - python3-authlib
         state: present
       when: ansible_distribution_release != "bullseye"
       notify: Restart matrix-synapse
