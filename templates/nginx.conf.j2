@@ -4,7 +4,7 @@ server {
     server_name {{ synapse_server_name }};
     ssl_certificate "{{ synapse_homeserver_proposed_config.tls_certificate_path }}";
     ssl_certificate_key "{{ synapse_homeserver_proposed_config.tls_private_key_path }}";
-    # ssl_trusted_certificate:  
+    # ssl_trusted_certificate:
     root /var/www/html;
     location /.well-known/acme-challenge/ {
         allow all;
@@ -24,7 +24,7 @@ server {
     }
 {% if synapse_homeserver_proposed_config.web_client_location is defined %}
     location / {
-        return 301 {{ synapse_homeserver_proposed_config.web_client_location }};
+        return 301 {{ synapse_homeserver_proposed_config.web_client_location }}$request_uri;
     }
 {% endif %}
 }
@@ -33,7 +33,7 @@ server {
     server_name {{ synapse_server_name }};
     ssl_certificate "{{ synapse_homeserver_proposed_config.tls_certificate_path }}";
     ssl_certificate_key "{{ synapse_homeserver_proposed_config.tls_private_key_path }}";
-    # ssl_trusted_certificate:  
+    # ssl_trusted_certificate:
     root /var/www/html;
     location /.well-known/matrix/client {
         return 200 '{"m.homeserver": {"base_url": "https://{{ synapse_server_name }}"}}';
@@ -50,7 +50,7 @@ server {
     }
 {% if synapse_homeserver_proposed_config.web_client_location is defined %}
     location / {
-        return 301 {{ synapse_homeserver_proposed_config.web_client_location }};
+        return 301 {{ synapse_homeserver_proposed_config.web_client_location }}$request_uri;
     }
 {% endif %}
 }
